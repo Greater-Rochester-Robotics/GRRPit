@@ -5,11 +5,6 @@
 </script>
 
 <svelte:boundary>
-    {#await invoke(`get_macos_titlebar`) then px}
-        <div data-tauri-drag-region style="position: absolute; height: {px ?? 0}px; width: 100vw;"></div>
-        <p style="position: absolute; left: 200px;">{px}</p>
-    {/await}
-
     {@render children()}
 
     {#snippet pending()}
