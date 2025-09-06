@@ -2,10 +2,11 @@ use tauri::{WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 #[tauri::command]
 fn get_macos_titlebar(webview_window: WebviewWindow) -> f64 {
+    let mut px: f64 = 0.0;
+
     #[cfg(target_os = "macos")]
     {
         use cocoa::appkit::NSWindow;
-        use cocoa::foundation::NSRect;
         use cocoa::base::id;
 
         let ns_window = webview_window.ns_window().unwrap() as id;
@@ -13,12 +14,11 @@ fn get_macos_titlebar(webview_window: WebviewWindow) -> f64 {
         unsafe {
             let frame = ns_window.frame();
             let content = ns_window.contentRectForFrameRect_(frame);
-
-            (frame.size.height - content.size.height).into();
+            px = frame.size.height - content.size.height;
         }
     }
 
-    (-1).into()
+    px.into()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
