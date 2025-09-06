@@ -1,9 +1,13 @@
+#[allow(unused)]
 use tauri::{WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 #[tauri::command]
+#[allow(unused)]
 fn get_macos_titlebar(webview_window: WebviewWindow) -> f64 {
+    #[allow(unused_mut)]
     let mut px: f64 = 0.0;
 
+    #[allow(deprecated)]
     #[cfg(target_os = "macos")]
     {
         use cocoa::appkit::NSWindow;

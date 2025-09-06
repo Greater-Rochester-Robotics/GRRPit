@@ -1,8 +1,14 @@
 <script lang="ts">
+    import { invoke } from "@tauri-apps/api/core";
+
     let { children } = $props();
 </script>
 
 <svelte:boundary>
+    {#await invoke(`get_macos_titlebar`) then px}
+        <div data-tauri-drag-region style="position: absolute; height: {px ?? 0}px; width: 100vw"></div>
+    {/await}
+
     {@render children()}
 
     {#snippet pending()}
