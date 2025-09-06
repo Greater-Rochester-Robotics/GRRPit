@@ -4,15 +4,15 @@ use tauri::{WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 fn get_macos_titlebar(webview_window: WebviewWindow) -> f64 {
     #[cfg(target_os = "macos")]
     {
-        use objc2::runtime::AnyObject;
-        use objc2_app_kit::NSWindow;
-        use objc2_foundation::NSRect;
+        use cocoa::appkit::NSWindow;
+        use cocoa::foundation::NSRect;
+        use cocoa::base::id;
 
-        let ns_window = webview_window.ns_window().unwrap() as *mut AnyObject;
+        let ns_window = webview_window.ns_window().unwrap() as id;
 
         unsafe {
             let frame = ns_window.frame();
-            let content = ns_window.contentRectForFrameRect(frame);
+            let content = ns_window.contentRectForFrameRect_(frame);
 
             (frame.size.height - content.size.height).into();
         }
@@ -52,6 +52,9 @@ pub fn run() {
                 apply_mica(&window, Some(true))
                     .expect("Unsupported platform! 'apply_mica' is only supported on Windows");
             }
+
+            #[cfg(target_os = "linux")]
+            win_builder.build();
 
             Ok(())
         })
