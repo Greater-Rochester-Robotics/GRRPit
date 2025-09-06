@@ -1,13 +1,14 @@
-use tauri::{WebviewUrl, WebviewWindowBuilder};
+use tauri::{WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 #[tauri::command]
-fn get_macos_titlebar(webview_window: tauri::WebviewWindow) -> f64 {
+fn get_macos_titlebar(webview_window: WebviewWindow) -> f64 {
     #[cfg(target_os = "macos")]
     {
+        use objc2::ffi::id;
         use objc2_app_kit::NSWindow;
         use objc2_foundation::NSRect;
 
-        let ns_window = webview_window.ns_window().unwrap();
+        let ns_window = webview_window.ns_window().unwrap() as id;
 
         let frame = ns_window.frame().unwrap();
         let content = ns_window.contentRectForFrameRect(frame).unwrap();
