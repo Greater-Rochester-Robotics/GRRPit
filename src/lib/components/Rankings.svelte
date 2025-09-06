@@ -3,7 +3,7 @@
     import type { Conduit } from "../Conduit";
     import type { EventState } from "../EventState";
 
-    let { event, conduit }: { event: EventState; conduit: Conduit } = $props();
+    let { event, teamNumber }: { event: EventState; teamNumber: number } = $props();
 
     function onAvatarError(e: any) {
         if (e.target && e.target.src !== "avatar.png") e.target.src = "avatar.png";
@@ -13,11 +13,7 @@
 <table cellspacing="0" cellpadding="0" style="border: none;">
     <tbody>
         {#each event.rankings as ranking}
-            <tr
-                style="{ranking.teamNumber === conduit.getTeam()
-                    ? 'background-color: rgba(255, 255, 255, 0.05);'
-                    : ''};"
-            >
+            <tr style={ranking.teamNumber === teamNumber ? "background-color: rgba(255, 255, 255, 0.05);" : ``}>
                 <td>{ranking.rank}</td>
                 <td class="avatar">
                     <img alt="" src={FRCColors.avatar(ranking.teamNumber)} onerror={onAvatarError} />

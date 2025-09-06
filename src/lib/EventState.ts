@@ -43,6 +43,7 @@ export interface ScheduledMatch {
     }>;
     result?: {
         winner: `Red` | `Blue` | `Tie`;
+        usWin: boolean;
         scoreRed: number;
         scoreBlue: number;
         awardedRp: number;

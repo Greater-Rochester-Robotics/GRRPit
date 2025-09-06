@@ -29,12 +29,12 @@
             </p>
             <p style="opacity: 0.6; font-size: 1vw; font-weight: 700;">{stringifyTime(event.now)}</p>
         </div>
-        <Rankings {event} {conduit} />
+        <Rankings {event} teamNumber={settings.teamNumber} />
     </div>
     <div id="right">
         <UpNext {event} />
         <div id="right-bottom">
-            <Schedule {event} {conduit} />
+            <Schedule {event} />
             <video autoplay muted loop playsinline>
                 <source src="/morale.mp4" type="video/mp4" />
             </video>

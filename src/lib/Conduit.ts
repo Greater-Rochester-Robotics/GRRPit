@@ -38,13 +38,6 @@ export class Conduit {
     }
 
     /**
-     * Returns the configured team number.
-     */
-    public getTeam(): number {
-        return this.team;
-    }
-
-    /**
      * Generates an empty event state.
      */
     public emptyState(): EventState {
@@ -123,6 +116,9 @@ export class Conduit {
                                               : r.scoreRedFinal > r.scoreBlueFinal
                                                 ? `Red`
                                                 : `Blue`,
+                                      usWin: usRed
+                                          ? r.scoreRedFinal > r.scoreBlueFinal
+                                          : r.scoreRedFinal < r.scoreBlueFinal,
                                       scoreRed: r.scoreRedFinal,
                                       scoreBlue: r.scoreBlueFinal,
                                       awardedRp: d.alliances.find((a) => (a.alliance === `Red`) === usRed)?.rp ?? 0,

@@ -22,7 +22,7 @@
 <main>
     <div id="container">
         <UpNext {event} />
-        <Schedule {event} {conduit} />
+        <Schedule {event} />
     </div>
 </main>
 
