@@ -6,15 +6,13 @@ fn get_macos_titlebar(webview_window: tauri::WebviewWindow) -> f64 {
     {
         use objc2_app_kit::NSWindow;
         use objc2_foundation::NSRect;
-        use std::cmp::max;
 
         let ns_window = webview_window.ns_window().unwrap();
 
         let frame = ns_window.frame().unwrap();
         let content = ns_window.contentRectForFrameRect(frame).unwrap();
 
-        let px: f64 = max(0., frame.size.height - content.size.height);
-        px.into();
+        (frame.size.height - content.size.height).into();
     }
 
     (-1).into()
