@@ -1,9 +1,8 @@
 <script lang="ts">
-    import type { Conduit } from "../Conduit";
     import type { EventState, ScheduledMatch } from "../EventState";
     import { stringifyTime } from "../util";
 
-    let { event, conduit }: { event: EventState; conduit: Conduit } = $props();
+    let { event }: { event: EventState } = $props();
 
     function stringifyMatchNumber(match: ScheduledMatch): string {
         const n = match.matchNumber;
@@ -30,33 +29,33 @@
         {#each event.schedule as match}
             {#snippet alliance(red: boolean)}
                 {#each match.teams.filter((t) => t.red === red) as { teamNumber }}
-                    <p style="text-decoration-line: {teamNumber === conduit.getTeam() ? `underline` : `none`};">
-                        {teamNumber}
-                    </p>
+                    <p>{teamNumber}</p>
                 {/each}
             {/snippet}
 
             <tr>
                 <td>{stringifyMatchNumber(match)}</td>
                 <td>
-                    <div class="alliance" style="background-color: rgba(255, 38, 46, {match.usRed ? 0.25 : 0.13});">
+                    <div class="alliance red{match.usRed ? ` us` : ``}">
                         {@render alliance(true)}
                     </div>
                 </td>
                 {#if match.result}
-                    <td style="font-weight: 700; opacity: {match.result.winner === `Red` ? 1.0 : 0.4};"
-                        >{match.result.scoreRed}</td
+                    <td
+                        class="score"
+                        style="padding-left: 0; {match.usRed && match.result.usWin ? ` opacity: 1.0;` : ``}"
                     >
-                    <td style="font-weight: 800; font-size: 0.8vw;"
-                        >{match.playoffs
-                            ? (match.result.winner === `Red`) === match.usRed
-                                ? `W`
-                                : `L`
-                            : `${match.result.awardedRp} RP`}</td
+                        {match.result.scoreRed}
+                    </td>
+                    <td style="font-weight: 800; font-size: 0.8vw; opacity: {match.result.usWin ? 1 : 0.4}">
+                        {match.playoffs ? (match.result.usWin ? `W` : `L`) : `${match.result.awardedRp} RP`}
+                    </td>
+                    <td
+                        class="score"
+                        style="padding-right: 0; {!match.usRed && match.result.usWin ? ` opacity: 1.0;` : ``}"
                     >
-                    <td style="font-weight: 700; opacity: {match.result.winner === `Blue` ? 1.0 : 0.4};"
-                        >{match.result.scoreBlue}</td
-                    >
+                        {match.result.scoreBlue}
+                    </td>
                 {:else}
                     <td></td>
                     <td style="font-weight: 600; font-size: 0.8vw;">{stringifyTime(match.startTime)}</td>
@@ -64,7 +63,7 @@
                 {/if}
 
                 <td>
-                    <div class="alliance" style="background-color: rgba(0, 68, 255, {!match.usRed ? 0.25 : 0.13});">
+                    <div class="alliance blue{!match.usRed ? ` us` : ``}">
                         {@render alliance(false)}
                     </div>
                 </td>
@@ -97,6 +96,12 @@
         font-size: 0.7vw;
     }
 
+    .score {
+        font-weight: 700;
+        width: 2vw;
+        opacity: 0.4;
+    }
+
     .alliance {
         display: flex;
         opacity: 1;
@@ -107,5 +112,25 @@
         width: 4vw;
         padding: 0.35vw 0;
         font-size: 0.8vw;
+    }
+
+    .red {
+        background-color: rgba(255, 38, 46, 0.15);
+    }
+
+    .red.us {
+        background-color: rgba(255, 38, 46, 0.3);
+    }
+
+    .blue {
+        background-color: rgba(0, 68, 255, 0.15);
+    }
+
+    .blue.us {
+        background-color: rgba(0, 68, 255, 0.3);
+    }
+
+    .us {
+        font-weight: 700;
     }
 </style>

@@ -21,13 +21,13 @@
                         <img
                             alt=""
                             onerror={(e: any) => {
-                                loaded.count += 1;
+                                loaded.count++;
                                 e.target.src =
                                     loaded.count < team.images.length ? team.images[loaded.count] : `dozer.jpeg`;
                             }}
                             src={team.images.length ? team.images[0] : `dozer.jpeg`}
                         />
-                        <div class="img-text">{team.teamNumber}</div>
+                        <p>{team.teamNumber}</p>
                     </div>
                 {/each}
             {/snippet}
@@ -75,16 +75,16 @@
         box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
     }
 
-    .team-container > div {
+    .team-container > p {
         position: absolute;
         bottom: 4%;
         left: 0;
         width: 100%;
-        font-size: 1.6vw;
+        font-size: 1.8vw;
         font-weight: 800;
-        letter-spacing: 1px;
         text-align: center;
         color: white;
-        mask-image: linear-gradient(black, rgba(0, 0, 0, 0.6));
+        text-shadow: 0 0 0.2vw black;
+        mask-image: linear-gradient(rgba(0, 0, 0, 0.6), black);
     }
 </style>

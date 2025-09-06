@@ -23,7 +23,7 @@
     <div id="container">
         <p id="heading">Practice Day</p>
         <UpNext {event} />
-        <Schedule {event} {conduit} />
+        <Schedule {event} />
     </div>
 </main>
 
@@ -48,6 +48,5 @@
         font-style: italic;
         opacity: 0.6;
         font-size: 1.4rem;
-        letter-spacing: 1px;
     }
 </style>

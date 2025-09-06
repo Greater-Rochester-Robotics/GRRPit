@@ -12,7 +12,7 @@
     "app": {
         "macOSPrivateApi": true,
         "security": { "csp": null },
-        "withGlobalTauri": true
+        "withGlobalTauri": false
     },
     "bundle": {
         "active": true,
