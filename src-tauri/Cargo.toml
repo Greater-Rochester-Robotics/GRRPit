@@ -1,0 +1,26 @@
+[package]
+name = "grrpit"
+version = "2025.0.0"
+description = "An FRC Pit Display by Team 340"
+authors = ["Team 340"]
+license = "MIT"
+edition = "2021"
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "grrpit_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.4.1", features = [] }
+
+[dependencies]
+tauri = { version = "2.8.5", features = ["macos-private-api"] }
+tauri-plugin-opener = "2.5.0"
+tauri-plugin-store = "2.4.0"
+tauri-plugin-http = "2.5.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+window-vibrancy="0.6.0"

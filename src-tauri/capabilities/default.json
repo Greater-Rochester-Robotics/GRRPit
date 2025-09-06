@@ -1,0 +1,21 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "default",
+    "description": "Capability for the main window",
+    "windows": ["main"],
+    "permissions": [
+        "core:default",
+        "core:window:default",
+        "core:window:allow-start-dragging",
+        "opener:default",
+        "store:default",
+        {
+            "identifier": "http:default",
+            "allow": [
+                { "url": "https://frc-api.firstinspires.org/v3.0/*" },
+                { "url": "https://frc.nexus/api/v1/*" },
+                { "url": "https://www.thebluealliance.com/api/v3/*" }
+            ]
+        }
+    ]
+}

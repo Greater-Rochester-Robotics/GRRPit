@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>GRRPit</title>
+
+        <style>
+            @font-face {
+                font-family: Inter;
+                font-style: normal;
+                font-weight: 100 900;
+                font-display: swap;
+                src: url("/fonts/InterVariable.woff2") format("woff2");
+            }
+            @font-face {
+                font-family: Inter;
+                font-style: italic;
+                font-weight: 100 900;
+                font-display: swap;
+                src: url("/fonts/InterVariable-Italic.woff2") format("woff2");
+            }
+
+            @keyframes appear {
+                0% {
+                    opacity: 0.2;
+                    transform: scale(0.95);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            :root {
+                color: rgb(242, 242, 247);
+                background-color: transparent;
+
+                font-family: Inter, sans-serif;
+                font-feature-settings:
+                    "liga" 1,
+                    "calt" 1;
+                text-rendering: optimizeLegibility;
+                -webkit-font-smoothing: antialiased;
+                -webkit-text-size-adjust: 100%;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
+            * {
+                margin: 0;
+                user-select: none;
+                -webkit-user-select: none;
+                transition-duration: 0.2s;
+            }
+
+            main {
+                animation: appear 0.1s ease-out;
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+                transition-duration: 0.1s;
+            }
+
+            a:hover {
+                cursor: pointer;
+                opacity: 0.6;
+            }
+        </style>
+        %sveltekit.head%
+    </head>
+
+    <body style="margin: 0; padding: 0" data-sveltekit-preload-data="hover">
+        <div data-tauri-drag-region style="position: absolute; height: 4vh; width: 100vw"></div>
+        <div style="display: contents">%sveltekit.body%</div>
+    </body>
+</html>

@@ -1,0 +1,171 @@
+name: CI
+on: [pull_request, push]
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+    cancel-in-progress: true
+
+env:
+    NODE_VERSION: 22
+
+jobs:
+    format:
+        name: Run Checks
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  registry-url: https://registry.npmjs.org/
+
+            - name: Install Node Modules
+              run: npm i --include=dev
+
+            - name: Run Checks
+              run: npm run check
+
+    build:
+        env:
+            MACOSX_DEPLOYMENT_TARGET: 13.3
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - artifact: Windows-x86_64
+                      platform: windows-2025
+                      build-flags: --target=x86_64-pc-windows-msvc
+
+                    - artifact: Windows-arm64
+                      platform: windows-2025
+                      build-flags: --target=aarch64-pc-windows-msvc
+
+                    - artifact: macOS-x86_64
+                      platform: macos-15
+                      build-flags: --target=x86_64-apple-darwin
+
+                    - artifact: macOS-arm64
+                      platform: macos-15
+                      build-flags: --target=aarch64-apple-darwin
+
+                    - artifact: Linux-x86_64
+                      platform: ubuntu-24.04
+                      build-flags: --target=x86_64-unknown-linux-gnu
+
+                    - artifact: Linux-arm64
+                      platform: ubuntu-24.04-arm
+                      build-flags: --target aarch64-unknown-linux-gnu
+
+        name: "Build ${{ matrix.artifact }}"
+        runs-on: ${{ matrix.platform }}
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  registry-url: https://registry.npmjs.org/
+
+            - name: Setup Rust
+              uses: dtolnay/rust-toolchain@stable
+
+            - name: Install System Dependencies (Ubuntu Only)
+              if: startsWith(matrix.platform, 'ubuntu')
+              run: |
+                  sudo apt-get update -q
+                  sudo apt-get install -y \
+                    libwebkit2gtk-4.1-dev \
+                    build-essential \
+                    curl \
+                    wget \
+                    file \
+                    libxdo-dev \
+                    libssl-dev \
+                    libayatana-appindicator3-dev \
+                    librsvg2-dev
+
+            - name: Install Node Modules
+              run: npm i --include=dev
+
+            - name: Install Windows aarch64 Rust compiler (Windows-arm64 Only)
+              if: matrix.artifact == 'Windows-arm64'
+              run: rustup target install aarch64-pc-windows-msvc
+
+            - name: Install macOS x86_64 Rust compiler (macOS-x86_64 Only)
+              if: matrix.artifact == 'macOS-x86_64'
+              run: rustup target add x86_64-apple-darwin
+
+            - name: Setup Xcode (macOS Only)
+              if: startsWith(matrix.platform, 'macOS')
+              run: sudo xcode-select -switch /Applications/Xcode_16.4.app
+
+            - name: Set up sccache
+              uses: mozilla-actions/sccache-action@v0.0.9
+
+            - name: Run Tauri Build
+              uses: tauri-apps/tauri-action@v0
+              env:
+                  RUSTC_WRAPPER: sccache
+                  SCCACHE_GHA_ENABLED: true
+              with:
+                  args: ${{ matrix.build-flags }}
+
+            - name: Upload bundle (Windows-x86_54)
+              if: matrix.artifact == 'Windows-x86_64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: GRRPit-${{ matrix.artifact }}
+                  path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+
+            - name: Upload bundle (Windows-arm64)
+              if: matrix.artifact == 'Windows-arm64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: GRRPit-${{ matrix.artifact }}
+                  path: src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe
+
+            - name: Upload bundle (macOS-x86_64)
+              if: matrix.artifact == 'macOS-x86_64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: GRRPit-${{ matrix.artifact }}
+                  path: src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+
+            - name: Upload bundle (macOS-arm64)
+              if: matrix.artifact == 'macOS-arm64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: GRRPit-${{ matrix.artifact }}
+                  path: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+
+            - name: Upload bundle (Linux-x86_64)
+              if: matrix.artifact == 'Linux-x86_64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: GRRPit-${{ matrix.artifact }}
+                  path: |
+                      src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage
+                      src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb
+                      src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+
+            - name: Upload bundle (Linux-arm64)
+              if: matrix.artifact == 'Linux-arm64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: GRRPit-${{ matrix.artifact }}
+                  path: |
+                      src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage
+                      src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb
+                      src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm
