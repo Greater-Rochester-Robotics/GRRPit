@@ -10,10 +10,12 @@ fn get_macos_titlebar(webview_window: WebviewWindow) -> f64 {
 
         let ns_window = webview_window.ns_window().unwrap() as *mut AnyObject;
 
-        let frame = ns_window.frame();
-        let content = ns_window.contentRectForFrameRect(frame);
+        unsafe {
+            let frame = ns_window.frame();
+            let content = ns_window.contentRectForFrameRect(frame);
 
-        (frame.size.height - content.size.height).into();
+            (frame.size.height - content.size.height).into();
+        }
     }
 
     (-1).into()
