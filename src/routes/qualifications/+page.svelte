@@ -7,6 +7,7 @@
     import { EventPhase, type EventState } from "$lib/EventState";
     import { stringifyTime } from "$lib/util";
     import { Settings } from "$lib/Settings";
+    import Time from "$lib/components/Time.svelte";
 
     const settings = await Settings.getAll();
     const conduit = new Conduit(settings);
@@ -23,13 +24,8 @@
 
 <main>
     <div id="left">
-        <div style="display: flex; margin: 0.5vw; gap: 0.1vw; flex-flow: column;">
-            <p style="font-size: 1.6vw; font-weight: 700;">
-                {event.now.toLocaleString(`en-us`, { weekday: `long` })}
-            </p>
-            <p style="opacity: 0.6; font-size: 1vw; font-weight: 700;">{stringifyTime(event.now)}</p>
-        </div>
-        <Rankings {event} teamNumber={settings.teamNumber} />
+        <Time {event} />
+        <Rankings {event} />
     </div>
     <div id="right">
         <UpNext {event} />
@@ -81,6 +77,6 @@
     #left,
     #right {
         display: flex;
-        flex-flow: column;
+        flex-direction: column;
     }
 </style>

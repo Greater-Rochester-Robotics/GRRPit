@@ -1,8 +1,8 @@
 import { fetch } from "@tauri-apps/plugin-http";
 
-export type TournamentLevel = `None` | `Practice` | `Qualification` | `Playoff`;
+export type FRCTournamentLevel = `None` | `Practice` | `Qualification` | `Playoff`;
 
-export interface Ranking {
+export interface FRCRanking {
     rank: number;
     teamNumber: number;
     sortOrder1: number;
@@ -19,9 +19,9 @@ export interface Ranking {
     matchesPlayed: number;
 }
 
-export interface ScheduledMatch {
+export interface FRCScheduledMatch {
     field: string;
-    tournamentLevel: TournamentLevel;
+    tournamentLevel: FRCTournamentLevel;
     description: string;
     startTime: string;
     matchNumber: number;
@@ -32,10 +32,10 @@ export interface ScheduledMatch {
     }>;
 }
 
-export interface MatchResult {
+export interface FRCMatchResult {
     actualStartTime: string;
     autoStartTime: string;
-    tournamentLevel: TournamentLevel;
+    tournamentLevel: FRCTournamentLevel;
     postResultTime: string;
     description: string;
     matchNumber: number;
@@ -53,14 +53,25 @@ export interface MatchResult {
     }>;
 }
 
-export interface MatchScores {
+export interface FRCMatchScores {
     alliances: Array<{
         alliance: `Red` | `Blue`;
         rp: number;
     }>;
-    matchLevel: TournamentLevel;
+    matchLevel: FRCTournamentLevel;
     matchNumber: number;
     winningAlliance: number;
+}
+
+export interface FRCAllianceSelection {
+    backup: number | null;
+    backupReplaced: boolean | null;
+    captain: number;
+    name: string;
+    number: number;
+    round1: number;
+    round2: number;
+    round3: number | null;
 }
 
 /**
@@ -87,8 +98,8 @@ export class FRCEvents {
      * @param top Optional number of requested top ranked teams to return in result.
      * @param teamNumber Optional team number of the team whose ranking is requested.
      */
-    public async eventRankings(top: number | null, teamNumber: number | null): Promise<Ranking[]> {
-        let rankings: Ranking[] = [];
+    public async eventRankings(top: number | null, teamNumber: number | null): Promise<FRCRanking[]> {
+        let rankings: FRCRanking[] = [];
 
         const url = new URL(`https://frc-api.firstinspires.org/v3.0/${this.season}/rankings/${this.event}`);
 
@@ -129,12 +140,12 @@ export class FRCEvents {
      * @param end Optional end match number for subset of results to return (inclusive).
      */
     public async eventSchedule(
-        tournamentLevel: TournamentLevel,
+        tournamentLevel: FRCTournamentLevel,
         teamNumber: number | null,
         start: number | null,
         end: number | null,
-    ): Promise<ScheduledMatch[]> {
-        let schedule: ScheduledMatch[] = [];
+    ): Promise<FRCScheduledMatch[]> {
+        let schedule: FRCScheduledMatch[] = [];
 
         const url = new URL(`https://frc-api.firstinspires.org/v3.0/${this.season}/schedule/${this.event}`);
         url.searchParams.set(`tournamentLevel`, `${tournamentLevel}`);
@@ -178,13 +189,13 @@ export class FRCEvents {
      * @param end Optional end match number for subset of results to return (inclusive).
      */
     public async eventMatchResults(
-        tournamentLevel: TournamentLevel | null,
+        tournamentLevel: FRCTournamentLevel | null,
         teamNumber: number | null,
         matchNumber: number | null,
         start: number | null,
         end: number | null,
-    ): Promise<MatchResult[]> {
-        let matches: MatchResult[] = [];
+    ): Promise<FRCMatchResult[]> {
+        let matches: FRCMatchResult[] = [];
 
         const url = new URL(`https://frc-api.firstinspires.org/v3.0/${this.season}/matches/${this.event}`);
         if (typeof tournamentLevel === `string`) url.searchParams.set(`tournamentLevel`, `${tournamentLevel}`);
@@ -213,14 +224,25 @@ export class FRCEvents {
         return matches;
     }
 
+    /**
+     * The score details API returns the score detail for all matches of a particular event in
+     * a particular season and a particular tournament level. Score details are only available
+     * once a match has been played, retrieving info about future matches requires the event
+     * schedule API. You cannot receive data about a match that is in progress.
+     * @param tournamentLevel Optional tournament level of desired match schedule.
+     * @param teamNumber Optional team number to search for within the schedule.
+     * @param matchNumber Optional specific single match number of result.
+     * @param start Optional start match number for subset of results to return (inclusive).
+     * @param end Optional end match number for subset of results to return (inclusive).
+     */
     public async scoreDetails(
-        tournamentLevel: TournamentLevel,
+        tournamentLevel: FRCTournamentLevel,
         teamNumber: number | null,
         matchNumber: number | null,
         start: number | null,
         end: number | null,
-    ): Promise<MatchScores[]> {
-        let scores: MatchScores[] = [];
+    ): Promise<FRCMatchScores[]> {
+        let scores: FRCMatchScores[] = [];
 
         const url = new URL(
             `https://frc-api.firstinspires.org/v3.0/${this.season}/scores/${this.event}/${tournamentLevel}`,
@@ -248,5 +270,34 @@ export class FRCEvents {
         }
 
         return scores;
+    }
+
+    /**
+     * The alliances API returns details about alliance selection
+     * at a particular event in a particular season.
+     */
+    public async allianceSelection(): Promise<FRCAllianceSelection[] | null> {
+        let selections: FRCAllianceSelection[] | null;
+
+        const url = new URL(`https://frc-api.firstinspires.org/v3.0/${this.season}/alliances/${this.event}`);
+
+        try {
+            const res = await fetch(url, {
+                headers: { Authorization: this.authorization },
+            });
+
+            if (!res.ok) {
+                throw new Error(
+                    `${res.status} ${res.statusText} - ${JSON.stringify(await res.json().catch(() => ``))}`,
+                );
+            }
+
+            selections = (await res.json()).Alliances;
+        } catch (error) {
+            console.error(error);
+            selections = null;
+        }
+
+        return selections;
     }
 }

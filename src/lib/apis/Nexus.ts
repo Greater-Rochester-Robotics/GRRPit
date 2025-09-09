@@ -1,8 +1,8 @@
-export interface Match {
+export interface NexusMatch {
     label: string;
     status: `Queuing soon` | `Now queuing` | `On deck` | `On field`;
-    redTeams: Array<string | null> | null;
-    blueTeams: Array<string | null> | null;
+    redTeams: NexusMatchTeams;
+    blueTeams: NexusMatchTeams;
     times: {
         scheduledStartTime: number | null;
         estimatedQueueTime: number | null;
@@ -17,26 +17,28 @@ export interface Match {
     replayOf: string | null;
 }
 
-export interface Announcement {
+export type NexusMatchTeams = Array<string | null> | null;
+
+export interface NexusAnnouncement {
     id: string;
     announcement: string;
     postedTime: number;
 }
 
-export interface PartsRequest {
+export interface NexusPartsRequest {
     id: string;
     parts: string;
     requestedByTeam: string;
     postedTime: number;
 }
 
-export interface EventStatus {
+export interface NexusEventStatus {
     eventKey: string;
     dataAsOfTime: number;
     nowQueuing: string | null;
-    matches: Match[];
-    announcements: Announcement[];
-    partsRequests: PartsRequest[];
+    matches: NexusMatch[];
+    announcements: NexusAnnouncement[];
+    partsRequests: NexusPartsRequest[];
 }
 
 /**
@@ -54,10 +56,10 @@ export class Nexus {
     /**
      * Returns the live status of the event.
      */
-    public async liveEventStatus(): Promise<EventStatus | null> {
+    public async liveEventStatus(): Promise<NexusEventStatus | null> {
         const url = new URL(`https://frc.nexus/api/v1/event/${this.eventKey}`);
 
-        let status: EventStatus | null = null;
+        let status: NexusEventStatus | null = null;
         try {
             const res = await fetch(url, {
                 headers: { "Nexus-Api-Key": this.apiKey },

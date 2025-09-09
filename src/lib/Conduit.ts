@@ -1,16 +1,21 @@
-import {
-    FRCEvents,
-    type MatchResult,
-    type ScheduledMatch as FRCScheduledMatch,
-    type TournamentLevel,
-} from "./apis/FRCEvents";
-import { Nexus } from "./apis/Nexus";
-import { TBA, type MediaType } from "./apis/TBA";
-import { EventPhase, type EventState, type ScheduledMatch, type UpNextTeam } from "./EventState";
+import { FRCEvents, type FRCTournamentLevel, type FRCScheduledMatch } from "./apis/FRCEvents";
+import { Nexus, type NexusMatch, type NexusMatchTeams } from "./apis/Nexus";
+import { TBA, type TBAMediaType } from "./apis/TBA";
 import type { SettingsData } from "./Settings";
+import {
+    EventPhase,
+    type EventState,
+    type ImageMap,
+    type PlayoffAlliance,
+    type PlayoffData,
+    type RankingData,
+    type ScheduleData,
+    type UpNextData,
+} from "./EventState";
+import { FRCColors } from "./apis/FRCColors";
 
 /**
- * Manages data obtained from third-party APIs.
+ * Manages and formats data obtained from third-party APIs.
  */
 export class Conduit {
     private readonly team: number;
@@ -20,7 +25,8 @@ export class Conduit {
     private readonly nexus: Nexus;
     private readonly tba: TBA;
 
-    private readonly imageCache: Map<number, string[]> = new Map();
+    private readonly imageCache: ImageMap = new Map();
+    private readonly colorCache: Map<number, `#${string}`> = new Map();
 
     public constructor(settings: SettingsData) {
         this.team = settings.teamNumber;
@@ -56,222 +62,299 @@ export class Conduit {
      * @returns The event's state.
      */
     public async fetchState(phase: EventPhase): Promise<EventState> {
-        if (!this.frcEvents || !this.nexus || !this.tba) {
-            return this.emptyState();
-        }
-
         const now = this.getNow();
-
         const tournamentLevel = this.serializePhase(phase);
-        const schedule = await this.frcEvents.eventSchedule(tournamentLevel, this.team, null, null);
-        const results =
-            phase !== EventPhase.PRACTICE
-                ? await this.frcEvents.eventMatchResults(tournamentLevel, this.team, null, null, null)
-                : [];
-        const scoreDetails =
-            phase !== EventPhase.PRACTICE
-                ? await this.frcEvents.scoreDetails(tournamentLevel, this.team, null, null, null)
-                : [];
+        const scheduleFilter = phase !== EventPhase.PLAYOFFS ? this.team : null;
 
-        const rankings = await this.frcEvents.eventRankings(16, null);
-        if (!rankings.find((r) => r.teamNumber === this.team)) {
-            const us = await this.frcEvents.eventRankings(null, this.team);
-            if (us.length) rankings[rankings.length - 1] = us[0];
-        }
+        const frcMatches = await this.frcEvents.eventSchedule(tournamentLevel, scheduleFilter, null, null);
+        const nexusMatches = (this.useNexus ? (await this.nexus.liveEventStatus())?.matches : undefined) ?? [];
 
-        const nextMatch = await this.findNextMatch(now, schedule, results);
+        const schedule = await this.getScheduleData(tournamentLevel, frcMatches);
 
         return {
             now,
             phase,
-            rankings: rankings.map((r) => ({
-                rank: r.rank,
-                teamNumber: r.teamNumber,
-                wins: r.wins,
-                losses: r.losses,
-                ties: r.ties,
-                rankingScore: r.sortOrder1,
-            })),
-            schedule: schedule
-                .map((s) => {
-                    const r = results.find((r) => r.matchNumber === s.matchNumber);
-                    const d = scoreDetails.find((d) => d.matchNumber === s.matchNumber);
-                    const usRed = s.teams.find((t) => t.teamNumber === this.team)?.station.startsWith(`Red`) ?? true;
-
-                    return {
-                        matchNumber: s.matchNumber,
-                        startTime: new Date(r?.actualStartTime ?? s.startTime),
-                        usRed,
-                        playoffs: s.tournamentLevel === `Playoff`,
-                        teams: s.teams.map((t) => ({
-                            teamNumber: t.teamNumber,
-                            red: t.station.startsWith(`Red`),
-                        })),
-                        result:
-                            r && d
-                                ? {
-                                      winner:
-                                          r.scoreRedFinal === r.scoreBlueFinal
-                                              ? `Tie`
-                                              : r.scoreRedFinal > r.scoreBlueFinal
-                                                ? `Red`
-                                                : `Blue`,
-                                      usWin: usRed
-                                          ? r.scoreRedFinal > r.scoreBlueFinal
-                                          : r.scoreRedFinal < r.scoreBlueFinal,
-                                      scoreRed: r.scoreRedFinal,
-                                      scoreBlue: r.scoreBlueFinal,
-                                      awardedRp: d.alliances.find((a) => (a.alliance === `Red`) === usRed)?.rp ?? 0,
-                                  }
-                                : undefined,
-                    } as ScheduledMatch;
-                })
-                .filter((m, i, a) => {
-                    if (m.playoffs && m.matchNumber === 16) {
-                        let f1 = a[i - 2];
-                        let f2 = a[i - 1];
-                        if (!f2.result) return false;
-                        if (f1?.result?.winner === f2?.result?.winner) return false;
-                    }
-
-                    return true;
-                }),
-            upNext: nextMatch ?? { label: `Break` },
+            rankings: phase !== EventPhase.PRACTICE ? await this.getRankingData() : [],
+            schedule,
+            upNext: (await this.getUpNextData(now, schedule, nexusMatches)) ?? { label: `Break` },
+            playoffs: phase === EventPhase.PLAYOFFS ? await this.getPlayoffData(frcMatches, nexusMatches) : undefined,
         };
+    }
+
+    /**
+     * Retrieves event qualification rankings.
+     * @returns Ranking data.
+     */
+    private async getRankingData(): Promise<RankingData> {
+        const frcRankings = await this.frcEvents.eventRankings(16, null);
+        if (!frcRankings.find((r) => r.teamNumber === this.team)) {
+            const us = await this.frcEvents.eventRankings(null, this.team);
+            if (us.length) frcRankings[frcRankings.length - 1] = us[0];
+        }
+
+        return frcRankings.map((r) => ({
+            rank: r.rank,
+            teamNumber: r.teamNumber,
+            us: r.teamNumber === this.team,
+            wins: r.wins,
+            losses: r.losses,
+            ties: r.ties,
+            rankingScore: r.sortOrder1,
+        }));
+    }
+
+    /**
+     * Retrieves the event schedule.
+     * @param tournamentLevel The tournament level to filter matches to.
+     * @param frcMatches Raw FRC scheduled matches.
+     * @returns Scheduled matches.
+     */
+    private async getScheduleData(
+        tournamentLevel: FRCTournamentLevel,
+        frcMatches: FRCScheduledMatch[],
+    ): Promise<ScheduleData> {
+        const frcResults =
+            tournamentLevel !== `Practice`
+                ? await this.frcEvents.eventMatchResults(tournamentLevel, this.team, null, null, null)
+                : [];
+        const frcScoreDetails =
+            tournamentLevel !== `Practice`
+                ? await this.frcEvents.scoreDetails(tournamentLevel, this.team, null, null, null)
+                : [];
+
+        let schedule: ScheduleData = frcMatches
+            .filter((m) => m.teams.some((t) => t.teamNumber === this.team))
+            .sort((a, b) => a.matchNumber - b.matchNumber)
+            .map((m) => {
+                const r = frcResults.find((r) => r.matchNumber === m.matchNumber);
+                const d = frcScoreDetails.find((d) => d.matchNumber === m.matchNumber);
+                const usRed = m.teams.find((t) => t.teamNumber === this.team)?.station.startsWith(`Red`) ?? true;
+
+                return {
+                    number: m.matchNumber,
+                    description: m.description,
+                    startTime: new Date(r?.actualStartTime ?? m.startTime),
+                    usRed,
+                    redTeams: m.teams.filter((t) => t.station.startsWith(`Red`)).map((t) => t.teamNumber),
+                    blueTeams: m.teams.filter((t) => t.station.startsWith(`Blue`)).map((t) => t.teamNumber),
+                    result:
+                        r && d
+                            ? {
+                                  winner:
+                                      r.scoreRedFinal === r.scoreBlueFinal
+                                          ? `Tie`
+                                          : r.scoreRedFinal > r.scoreBlueFinal
+                                            ? `Red`
+                                            : `Blue`,
+                                  usWin: usRed
+                                      ? r.scoreRedFinal > r.scoreBlueFinal
+                                      : r.scoreRedFinal < r.scoreBlueFinal,
+                                  scoreRed: r.scoreRedFinal,
+                                  scoreBlue: r.scoreBlueFinal,
+                                  awardedRp: d.alliances.find((a) => (a.alliance === `Red`) === usRed)?.rp,
+                              }
+                            : undefined,
+                };
+            });
+
+        if (frcMatches.every((m) => m.tournamentLevel === `Playoff`)) {
+            schedule = schedule.filter((m, i, a) => {
+                if (m.number === 16) {
+                    let f1 = a[i - 2];
+                    let f2 = a[i - 1];
+                    if (!f2.result) return false;
+                    if (f1?.result?.winner === f2?.result?.winner) return false;
+                }
+
+                return true;
+            });
+        }
+
+        return schedule;
     }
 
     /**
      * Finds the next match, attempting to use Nexus if
      * possible, falling back to the FRC Events API.
-     * @param schedule The event schedule from the FRC Events API.
-     * @param results Match results from the FRC Events API.
+     * @param now The current time.
+     * @param schedule The parsed event schedule.
+     * @param nexusMatches Raw nexus matches.
      * @returns The match if one is found, `null` otherwise.
      */
-    private async findNextMatch(
+    private async getUpNextData(
         now: Date,
-        schedule: FRCScheduledMatch[],
-        results: MatchResult[],
-    ): Promise<EventState[`upNext`] | null> {
-        const eventStatus = this.useNexus
-            ? (await this.nexus.liveEventStatus())?.matches.filter(
-                  (m) => m.blueTeams?.includes(`${this.team}`) || m.redTeams?.includes(`${this.team}`),
-              )
-            : undefined;
+        schedule: ScheduleData,
+        nexusMatches: NexusMatch[],
+    ): Promise<UpNextData | null> {
+        const eventStatus = nexusMatches.filter(
+            (m) => m.blueTeams?.includes(`${this.team}`) || m.redTeams?.includes(`${this.team}`),
+        );
 
-        const matchStatus =
-            eventStatus?.find((m) => m.status !== `On field` || (m.times.estimatedStartTime ?? 0) > now.getTime()) ??
-            eventStatus?.at(-1);
+        const nexusMatch =
+            eventStatus.find((m) => m.status !== `On field` || (m.times.estimatedStartTime ?? 0) > now.getTime()) ??
+            eventStatus.at(-1);
 
-        if (matchStatus) {
-            // type "YES" to affirm this whole function looks terrible
-            const teams = ([] as UpNextTeam[]).concat(
-                matchStatus.redTeams
-                    ?.filter((t) => t !== null)
-                    .map((t) => ({ teamNumber: Number(t), red: true, images: [] })) ?? [],
-                matchStatus.blueTeams
-                    ?.filter((t) => t !== null)
-                    .map((t) => ({ teamNumber: Number(t), red: false, images: [] })) ?? [],
-            );
-
-            await this.hydrateImages(teams);
-
-            let estimate: number | null = null;
-            let prefix: string;
-
-            switch (matchStatus.status) {
-                case `Queuing soon`:
-                    estimate = matchStatus.times.estimatedQueueTime;
-                    prefix = `Queuing in `;
-                    break;
-                case `Now queuing`:
-                    estimate = matchStatus.times.estimatedOnDeckTime;
-                    prefix = `On deck in`;
-                    break;
-                case `On deck`:
-                    estimate = matchStatus.times.estimatedOnFieldTime;
-                    prefix = `On field in`;
-                    break;
-                case `On field`:
-                    estimate = matchStatus.times.estimatedStartTime;
-                    prefix = `Starting in`;
-                    break;
-            }
-
-            let status: string = matchStatus.status;
-            if (estimate !== null) {
-                const countdown = Math.max(0, (estimate - now.getTime()) / 1000 / 60).toFixed(0);
-                status = prefix + ` ` + countdown + ` minute` + (countdown !== `1` ? `s` : ``);
-            }
+        if (nexusMatch) {
+            const redTeams = this.nexusMapTeams(nexusMatch.redTeams);
+            const blueTeams = this.nexusMapTeams(nexusMatch.blueTeams);
 
             return {
-                label: matchStatus.label,
+                label: nexusMatch.label,
                 match: {
-                    status,
-                    usRed: matchStatus.redTeams?.includes(`${this.team}`) ?? true,
-                    teams,
+                    number: this.nexusMatchNumber(nexusMatch),
+                    status: this.nexusMatchStatus(now, nexusMatch),
+                    redTeams,
+                    blueTeams,
+                    images: await this.getImages(redTeams, blueTeams),
                 },
             };
         } else {
             const scheduleNext =
-                schedule.find(
-                    (s) => new Date(s.startTime) > now && !results.find((r) => r.matchNumber === s.matchNumber),
-                ) ?? schedule.at(-1);
-
+                schedule.find((s) => s.startTime.getTime() > now.getTime() && !s.result) ?? schedule.at(-1);
             if (!scheduleNext) return null;
 
             const countdown = Math.max(0, new Date(scheduleNext.startTime).getTime() - now.getTime());
-            const resultsPosted = results.find((r) => r.matchNumber === scheduleNext.matchNumber) !== undefined;
-            const teams = scheduleNext.teams.map((t) => ({
-                teamNumber: t.teamNumber,
-                red: t.station.startsWith(`Red`),
-                images: [],
-            }));
-
-            await this.hydrateImages(teams);
 
             return {
                 label: scheduleNext.description,
                 match: {
-                    status: resultsPosted
+                    number: scheduleNext.number,
+                    status: scheduleNext.result
                         ? `Results Posted`
                         : countdown > 0
                           ? `Scheduled to start in ${(countdown / 1000 / 60).toFixed(0)}m`
                           : `In progress`,
-                    usRed:
-                        scheduleNext.teams.find((t) => t.teamNumber === this.team)?.station.startsWith(`Red`) ?? true,
-                    teams,
+                    redTeams: scheduleNext.redTeams,
+                    blueTeams: scheduleNext.blueTeams,
+                    images: await this.getImages(scheduleNext.redTeams, scheduleNext.blueTeams),
                 },
             };
         }
     }
 
     /**
-     * Hydrates an array of teams scheduled for the
-     * next match with their images in-place.
-     * @param teams The array of teams to hydrate.
+     * Retrieves data for playoffs.
+     * @param frcMatches Raw FRC scheduled matches.
+     * @param nexusMatches Raw nexus matches.
+     * @returns Playoff data.
      */
-    private async hydrateImages(teams: UpNextTeam[]): Promise<void> {
-        const priority: (m: MediaType) => number = (m) => {
+    private async getPlayoffData(frcMatches: FRCScheduledMatch[], nexusMatches: NexusMatch[]): Promise<PlayoffData> {
+        const alliances: PlayoffAlliance[] =
+            (await this.frcEvents.allianceSelection())?.map((a) => {
+                const teams = [a.captain, a.round1, a.round2].concat(
+                    a.round3 !== null ? a.round3 : a.backup !== null ? a.backup : [],
+                );
+
+                return {
+                    number: a.number,
+                    teams,
+                    color: `#9a989a`,
+                    us: teams.includes(this.team),
+                };
+            }) ?? [];
+
+        for (const alliance of alliances) {
+            if (alliance.teams.length) {
+                const captain = alliance.teams[0];
+
+                const cached = this.colorCache.get(captain);
+                if (cached) {
+                    alliance.color = cached;
+                    continue;
+                }
+
+                const colors = await FRCColors.colors(captain);
+                if (colors !== null) {
+                    const parse = (hex: `#${string}`) =>
+                        hex
+                            .slice(1)
+                            .match(/.{1,2}/g)
+                            ?.reduce(
+                                (p, c) => {
+                                    const v = parseInt(c, 16);
+                                    return {
+                                        w: v > p.w ? v : p.w,
+                                        t: p.t + v,
+                                    };
+                                },
+                                { w: 0, t: 0 },
+                            ) ?? { w: 0, t: 0 };
+
+                    const p = parse(colors.primaryHex);
+                    const s = parse(colors.secondaryHex);
+
+                    if (p.w > 40) {
+                        alliance.color = p.t < 660 || p.t < s.t ? colors.primaryHex : colors.secondaryHex;
+                    } else {
+                        alliance.color = p.w > s.w ? colors.primaryHex : colors.secondaryHex;
+                    }
+
+                    this.colorCache.set(captain, alliance.color);
+                }
+            }
+        }
+
+        return {
+            alliances,
+            matches: new Array(16).fill(null).map((_, i) => {
+                const nexusMatch = nexusMatches.find((m) => this.nexusMatchNumber(m) === i);
+                const frcTeams = frcMatches.find((m) => m.matchNumber === i)?.teams;
+
+                const map = (a: `Red` | `Blue`, nexus?: NexusMatchTeams): number[] => [
+                    ...new Set(
+                        this.nexusMapTeams(nexus ?? []).concat(
+                            frcTeams?.filter((t) => t.station.startsWith(a)).map((t) => t.teamNumber) ?? [],
+                        ),
+                    ),
+                ];
+
+                const redTeams = map(`Red`, nexusMatch?.redTeams);
+                const blueTeams = map(`Blue`, nexusMatch?.blueTeams);
+
+                return {
+                    number: i,
+                    redTeams,
+                    blueTeams,
+                    name: i > 13 ? `Final ${i - 13}` : `Match ${i}`,
+                    usRed: redTeams.includes(this.team) ? true : blueTeams.includes(this.team) ? false : null,
+                    redFill: this.playoffFill(i, true),
+                    blueFill: this.playoffFill(i, false),
+                };
+            }),
+        };
+    }
+
+    /**
+     * Fetches images for the specified array(s) of teams.
+     * @param teams The array(s) of teams to fetch.
+     * @return A `key: team` -> `value: image` map.
+     */
+    private async getImages(...teams: number[][]): Promise<ImageMap> {
+        const priority: (m: TBAMediaType) => number = (m) => {
             const i = [`imgur`, `cdphotothread`, `instagram-image`].indexOf(m);
             return i < 0 ? 100 : i;
         };
 
-        for (const team of teams) {
-            const cached = this.imageCache.get(team.teamNumber);
+        const map: ImageMap = new Map();
+        for (const team of teams.flat()) {
+            const cached = this.imageCache.get(team);
             if (cached) {
-                team.images = cached;
+                map.set(team, cached);
                 continue;
             }
 
-            team.images = (await this.tba.teamMedia(team.teamNumber))
+            const images = (await this.tba.teamMedia(team))
                 .sort((a, b) => priority(a.type) - priority(b.type))
                 .map((m) =>
                     m.type === `instagram-image` ? `https://www.thebluealliance.com${m.direct_url}` : m.direct_url,
                 )
                 .filter((m) => typeof m === `string`);
 
-            this.imageCache.set(team.teamNumber, team.images);
+            map.set(team, images);
+            this.imageCache.set(team, images);
         }
+
+        return map;
     }
 
     /**
@@ -284,11 +367,115 @@ export class Conduit {
     }
 
     /**
-     * Serializes an {@link EventPhase} to an FRC Events API {@link TournamentLevel}.
+     * Maps raw nexus team arrays to nice number arrays.
+     * @param teams The raw nexus data.
+     * @returns An array of team numbers.
+     */
+    private nexusMapTeams(teams: NexusMatchTeams): number[] {
+        return teams?.filter((t) => t !== null).map((t) => Number(t)) ?? [];
+    }
+
+    /**
+     * Parses a match number from a nexus match.
+     * @param match The match to parse from.
+     * @returns The match number.
+     */
+    private nexusMatchNumber(match: NexusMatch): number {
+        if (match.label.startsWith(`Final `)) return Number(match.label.split(` `)[1]) + 13;
+        return (
+            match.label
+                .split(` `)
+                .map((s) => Number(s))
+                .find((n) => !Number.isNaN(n)) ?? 0
+        );
+    }
+
+    /**
+     * Parses a match status from a nexus match.
+     * @param now
+     * @param match
+     */
+    private nexusMatchStatus(now: Date, match: NexusMatch): string {
+        let estimate: number | null = null;
+        let prefix: string;
+
+        switch (match.status) {
+            case `Queuing soon`:
+                estimate = match.times.estimatedQueueTime;
+                prefix = `Queuing in `;
+                break;
+            case `Now queuing`:
+                estimate = match.times.estimatedOnDeckTime;
+                prefix = `On deck in`;
+                break;
+            case `On deck`:
+                estimate = match.times.estimatedOnFieldTime;
+                prefix = `On field in`;
+                break;
+            case `On field`:
+                estimate = match.times.estimatedStartTime;
+                prefix = `Starting in`;
+                break;
+        }
+
+        let status: string = match.status;
+        if (estimate !== null) {
+            const countdown = Math.max(0, (estimate - now.getTime()) / 1000 / 60).toFixed(0);
+            status = prefix + ` ` + countdown + ` minute` + (countdown !== `1` ? `s` : ``);
+        }
+
+        return status;
+    }
+
+    /**
+     * Maps a playoff match's alliance filler.
+     * @param matchNumber The match to get the filler from.
+     * @param red `true` to get the red alliance filler, `false` to get the blue alliance filler.
+     * @returns The filler for the specified match and alliance.
+     */
+    private playoffFill(matchNumber: number, red: boolean): string {
+        switch (matchNumber) {
+            case 1:
+                return red ? `Alliance 1` : `Alliance 8`;
+            case 2:
+                return red ? `Alliance 4` : `Alliance 5`;
+            case 3:
+                return red ? `Alliance 2` : `Alliance 7`;
+            case 4:
+                return red ? `Alliance 3` : `Alliance 6`;
+            case 5:
+                return red ? `Loser of M1` : `Loser of M2`;
+            case 6:
+                return red ? `Loser of M3` : `Loser of M4`;
+            case 7:
+                return red ? `Winner of M1` : `Winner of M2`;
+            case 8:
+                return red ? `Winner of M3` : `Winner of M4`;
+            case 9:
+                return red ? `Loser of M7` : `Winner of M6`;
+            case 10:
+                return red ? `Loser of M8` : `Winner of M5`;
+            case 11:
+                return red ? `Winner of M7` : `Winner of M8`;
+            case 12:
+                return red ? `Winner of M10` : `Winner of M9`;
+            case 13:
+                return red ? `Loser of M11` : `Winner of M12`;
+            case 14:
+            case 15:
+            case 16:
+                return red ? `Winner of M11` : `Winner of M13`;
+            default:
+                return `Winner of M0`;
+        }
+    }
+
+    /**
+     * Serializes an {@link EventPhase} to an FRC Events API {@link FRCTournamentLevel}.
      * @param phase The phase to serialize.
      * @return The corresponding tournament level.
      */
-    private serializePhase(phase: EventPhase): TournamentLevel {
+    private serializePhase(phase: EventPhase): FRCTournamentLevel {
         switch (phase) {
             case EventPhase.PRACTICE:
                 return `Practice`;

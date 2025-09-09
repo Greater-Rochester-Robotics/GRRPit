@@ -1,10 +1,7 @@
-export interface TeamColors {
-    teamNumber: number;
-    colors: {
-        primaryHex: string;
-        secondaryHex: string;
-        verified: boolean;
-    };
+export interface FRCTeamColors {
+    primaryHex: `#${string}`;
+    secondaryHex: `#${string}`;
+    verified: boolean;
 }
 
 /**
@@ -26,7 +23,7 @@ export class FRCColors {
      * Get the colors for a team by number.
      * @param teamNumber Team number of the team who's colors are being requested.
      */
-    public static async colors(teamNumber: number): Promise<TeamColors | null> {
+    public static async colors(teamNumber: number): Promise<FRCTeamColors | null> {
         const url = new URL(`https://api.frc-colors.com/v1/team/${teamNumber}`);
 
         try {

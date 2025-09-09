@@ -1,6 +1,6 @@
 import { fetch } from "@tauri-apps/plugin-http";
 
-export type MediaType =
+export type TBAMediaType =
     | `youtube`
     | `cdphotothread`
     | `imgur`
@@ -16,8 +16,8 @@ export type MediaType =
     | `external-link`
     | `avatar`;
 
-export interface Media {
-    type: MediaType;
+export interface TBAMedia {
+    type: TBAMediaType;
     foreign_key: string;
     details?: any;
     preferred?: boolean;
@@ -52,8 +52,8 @@ export class TBA {
      * Gets a list of Media (videos / pictures) for the given team and year.
      * @param teamNumber Team number of the team who's media is being requested.
      */
-    public async teamMedia(teamNumber: number): Promise<Media[]> {
-        let media: Media[] = [];
+    public async teamMedia(teamNumber: number): Promise<TBAMedia[]> {
+        let media: TBAMedia[] = [];
 
         const url = new URL(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/media/${this.season}`);
 

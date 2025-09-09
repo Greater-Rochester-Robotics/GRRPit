@@ -4,43 +4,52 @@
     let { event }: { event: EventState } = $props();
 </script>
 
-<div id="up-next-container">
+<div id="container">
     <div id="match">
-        <p style="font-size: 1vw; opacity: 0.6; font-weight: 300;">Up Next</p>
-        <p style="font-size: 2vw; font-weight: 700;">{event.upNext.label ?? `Break`}</p>
-        <p style="padding-top: 0.2vw; opacity: 0.8; font-size: 1.2vw; font-weight: 500; font-style: italic;">
+        <p style="font-size: 0.8vw; opacity: 0.6; font-weight: 300; margin-bottom: 0.1vw;">Up Next</p>
+        <p style="font-size: 2vw; font-weight: 700; line-height: 100%;">{event.upNext.label}</p>
+        <p style="padding-top: 0.2vw; opacity: 0.8; font-size: 1vw; font-weight: 500; font-style: italic;">
             {event.upNext.match?.status ?? ``}
         </p>
     </div>
     <div id="matchup">
         {#if event.upNext.match}
             {#snippet alliance(red: boolean)}
-                {#each event.upNext.match!.teams.filter((t) => (red ? t.red : !t.red)) as team}
-                    {@const loaded = { count: 0 }}
-                    <div class="team-container">
-                        <img
-                            alt=""
-                            onerror={(e: any) => {
-                                loaded.count++;
-                                e.target.src =
-                                    loaded.count < team.images.length ? team.images[loaded.count] : `dozer.jpeg`;
-                            }}
-                            src={team.images.length ? team.images[0] : `dozer.jpeg`}
-                        />
-                        <p>{team.teamNumber}</p>
+                {@const teams = event.upNext.match![red ? `redTeams` : `blueTeams`]}
+                {#if teams.length}
+                    {#each teams as team}
+                        {@const images = event.upNext.match!.images.get(team)!}
+                        {@const loaded = { count: 0 }}
+
+                        <div class="team-container">
+                            <img
+                                alt=""
+                                onerror={(e: any) => {
+                                    loaded.count++;
+                                    e.target.src = loaded.count < images.length ? images[loaded.count] : `dozer.jpeg`;
+                                }}
+                                src={images.length ? images[0] : `dozer.jpeg`}
+                            />
+                            <p>{team}</p>
+                        </div>
+                    {/each}
+                {:else}
+                    {@const playoff = event.playoffs?.matches.find((m) => m.number === event.upNext.match?.number)}
+                    <div class="tbd">
+                        <h1>{playoff ? playoff[red ? `redFill` : `blueFill`] : `TBD`}</h1>
                     </div>
-                {/each}
+                {/if}
             {/snippet}
 
             {@render alliance(true)}
-            <p style="font-size: 1.6vw; font-weight: 700;">vs</p>
+            <p style="font-size: 1.6vw; font-weight: 700; opacity: 0.8;">vs</p>
             {@render alliance(false)}
         {/if}
     </div>
 </div>
 
 <style>
-    #up-next-container {
+    #container {
         display: flex;
         height: 25vh;
         width: 100%;
@@ -50,9 +59,10 @@
 
     #match {
         display: flex;
-        flex-flow: column;
+        flex-direction: column;
         font-optical-sizing: none;
         justify-content: center;
+        gap: 0.2vw;
     }
 
     #matchup {
@@ -86,5 +96,19 @@
         color: white;
         text-shadow: 0 0 0.2vw black;
         mask-image: linear-gradient(rgba(0, 0, 0, 0.6), black);
+    }
+
+    .tbd {
+        line-height: 18vh;
+        text-align: center;
+        height: 18vh;
+        width: 22vw;
+        border-radius: 0.5vw;
+        border: 1px solid rgb(120, 120, 124);
+        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
+        color: rgba(255, 255, 255, 0.7);
+        background: linear-gradient(rgba(202, 202, 208, 0.6), rgba(202, 202, 208, 0.1));
+        font-size: 0.6vw;
+        font-style: italic;
     }
 </style>

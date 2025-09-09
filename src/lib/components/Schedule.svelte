@@ -1,18 +1,8 @@
 <script lang="ts">
-    import type { EventState, ScheduledMatch } from "../EventState";
+    import { type EventState } from "../EventState";
     import { stringifyTime } from "../util";
 
     let { event }: { event: EventState } = $props();
-
-    function stringifyMatchNumber(match: ScheduledMatch): string {
-        const n = match.matchNumber;
-        if (match.playoffs) {
-            if (n > 13) return `F${n - 13}`;
-            else return `M${n}`;
-        }
-
-        return `${n}`;
-    }
 </script>
 
 <table cellspacing="0" cellpadding="0" style="border: none;">
@@ -28,45 +18,39 @@
 
         {#each event.schedule as match}
             {#snippet alliance(red: boolean)}
-                {#each match.teams.filter((t) => t.red === red) as { teamNumber }}
-                    <p>{teamNumber}</p>
-                {/each}
+                <div class="alliance {red ? `red` : `blue`}{match.usRed === red ? ` us` : ``}">
+                    {#each match[red ? `redTeams` : `blueTeams`] as team}
+                        <p>{team}</p>
+                    {/each}
+                </div>
             {/snippet}
 
             <tr>
-                <td>{stringifyMatchNumber(match)}</td>
-                <td>
-                    <div class="alliance red{match.usRed ? ` us` : ``}">
-                        {@render alliance(true)}
-                    </div>
-                </td>
+                <td>{match.number}</td>
+                <td>{@render alliance(true)}</td>
                 {#if match.result}
-                    <td
-                        class="score"
-                        style="padding-left: 0; {match.usRed && match.result.usWin ? ` opacity: 1.0;` : ``}"
-                    >
+                    <td class="score" style="padding-left: 0; {match.usRed ? ` opacity: 1.0;` : ``}">
                         {match.result.scoreRed}
                     </td>
                     <td style="font-weight: 800; font-size: 0.8vw; opacity: {match.result.usWin ? 1 : 0.4}">
-                        {match.playoffs ? (match.result.usWin ? `W` : `L`) : `${match.result.awardedRp} RP`}
+                        {typeof match.result.awardedRp == `number`
+                            ? `${match.result.awardedRp} RP`
+                            : match.result.usWin
+                              ? `W`
+                              : `L`}
                     </td>
-                    <td
-                        class="score"
-                        style="padding-right: 0; {!match.usRed && match.result.usWin ? ` opacity: 1.0;` : ``}"
-                    >
+                    <td class="score" style="padding-right: 0; {!match.usRed ? ` opacity: 1.0;` : ``}">
                         {match.result.scoreBlue}
                     </td>
                 {:else}
                     <td></td>
-                    <td style="font-weight: 600; font-size: 0.8vw;">{stringifyTime(match.startTime)}</td>
+                    <td style="font-weight: 600; font-size: 0.8vw;">
+                        {match.startTime ? stringifyTime(match.startTime) : `TBD`}
+                    </td>
                     <td></td>
                 {/if}
 
-                <td>
-                    <div class="alliance blue{!match.usRed ? ` us` : ``}">
-                        {@render alliance(false)}
-                    </div>
-                </td>
+                <td>{@render alliance(false)}</td>
             </tr>
         {/each}
     </tbody>
@@ -103,15 +87,18 @@
     }
 
     .alliance {
+        width: 12vw;
         display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        text-align: center;
         opacity: 1;
         border-radius: 0.3vw;
-    }
 
-    .alliance > p {
-        width: 4vw;
-        padding: 0.35vw 0;
-        font-size: 0.8vw;
+        > p {
+            padding: 0.35vw 0;
+            font-size: 0.8vw;
+        }
     }
 
     .red {

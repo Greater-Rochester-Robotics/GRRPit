@@ -1,10 +1,9 @@
-/**
- * Represents the current phase of the event.
- */
-export enum EventPhase {
-    PRACTICE,
-    QUALIFICATIONS,
-    PLAYOFFS,
+export type ImageMap = Map<number, string[]>;
+
+export interface Match {
+    number: number;
+    redTeams: number[];
+    blueTeams: number[];
 }
 
 /**
@@ -13,45 +12,70 @@ export enum EventPhase {
 export interface EventState {
     now: Date;
     phase: EventPhase;
-    rankings: Array<{
-        rank: number;
-        teamNumber: number;
-        wins: number;
-        losses: number;
-        ties: number;
-        rankingScore: number;
-    }>;
-    schedule: ScheduledMatch[];
-    upNext: {
-        label: string;
-        match?: {
-            status: string;
-            usRed: boolean;
-            teams: UpNextTeam[];
-        };
-    };
+    rankings: RankingData;
+    schedule: ScheduleData;
+    upNext: UpNextData;
+    playoffs?: PlayoffData;
 }
 
-export interface ScheduledMatch {
-    matchNumber: number;
+export enum EventPhase {
+    PRACTICE,
+    QUALIFICATIONS,
+    PLAYOFFS,
+}
+
+export type RankingData = Ranking[];
+
+export interface Ranking {
+    rank: number;
+    teamNumber: number;
+    us: boolean;
+    wins: number;
+    losses: number;
+    ties: number;
+    rankingScore: number;
+}
+
+export type ScheduleData = ScheduledMatch[];
+
+export interface ScheduledMatch extends Match {
+    description: string;
     startTime: Date;
     usRed: boolean;
-    playoffs: boolean;
-    teams: Array<{
-        teamNumber: number;
-        red: boolean;
-    }>;
     result?: {
         winner: `Red` | `Blue` | `Tie`;
         usWin: boolean;
         scoreRed: number;
         scoreBlue: number;
-        awardedRp: number;
+        awardedRp?: number;
     };
 }
 
-export interface UpNextTeam {
-    teamNumber: number;
-    red: boolean;
-    images: string[];
+export interface UpNextData {
+    label: string;
+    match?: UpNextMatch;
+}
+
+export interface UpNextMatch extends Match {
+    status: string;
+    images: ImageMap;
+}
+
+export interface PlayoffData {
+    matches: PlayoffMatch[];
+    alliances: PlayoffAlliance[];
+}
+
+export interface PlayoffMatch extends Match {
+    name: string;
+    usRed: boolean | null;
+    redFill: string;
+    blueFill: string;
+}
+
+export interface PlayoffAlliance {
+    number: number;
+    teams: number[];
+    color: `#${string}`;
+    us: boolean;
 }

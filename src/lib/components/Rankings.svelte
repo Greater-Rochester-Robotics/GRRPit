@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { FRCColors } from "../apis/FRCColors";
-    import type { Conduit } from "../Conduit";
     import type { EventState } from "../EventState";
+    import { FRCColors } from "../apis/FRCColors";
 
-    let { event, teamNumber }: { event: EventState; teamNumber: number } = $props();
+    let { event }: { event: EventState } = $props();
 
     function onAvatarError(e: any) {
         if (e.target && e.target.src !== "avatar.png") e.target.src = "avatar.png";
@@ -13,7 +12,7 @@
 <table cellspacing="0" cellpadding="0" style="border: none;">
     <tbody>
         {#each event.rankings as ranking}
-            <tr style={ranking.teamNumber === teamNumber ? "background-color: rgba(255, 255, 255, 0.05);" : ``}>
+            <tr style={ranking.us ? "background-color: rgba(255, 255, 255, 0.05);" : ``}>
                 <td>{ranking.rank}</td>
                 <td class="avatar">
                     <img alt="" src={FRCColors.avatar(ranking.teamNumber)} onerror={onAvatarError} />
