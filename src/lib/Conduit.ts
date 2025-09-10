@@ -7,6 +7,7 @@ import {
     type EventState,
     type ImageMap,
     type PlayoffAlliance,
+    type PlayoffAllianceColors,
     type PlayoffData,
     type RankingData,
     type ScheduleData,
@@ -18,15 +19,15 @@ import { FRCColors } from "./apis/FRCColors";
  * Manages and formats data obtained from third-party APIs.
  */
 export class Conduit {
+    private static readonly imageCache: ImageMap = new Map();
+    private static readonly colorCache: Map<number, PlayoffAllianceColors> = new Map();
+
     private readonly team: number;
     private readonly useNexus: boolean;
 
     private readonly frcEvents: FRCEvents;
     private readonly nexus: Nexus;
     private readonly tba: TBA;
-
-    private readonly imageCache: ImageMap = new Map();
-    private readonly colorCache: Map<number, `#${string}`> = new Map();
 
     public constructor(settings: SettingsData) {
         this.team = settings.teamNumber;
@@ -79,6 +80,19 @@ export class Conduit {
             upNext: (await this.getUpNextData(now, schedule, nexusMatches)) ?? { label: `Break` },
             playoffs: phase === EventPhase.PLAYOFFS ? await this.getPlayoffData(frcMatches, nexusMatches) : undefined,
         };
+    }
+
+    /**
+     * Sets the selected primary color usage for a team in the shared color cache.
+     * @param team The team the color belongs to.
+     * @param eventState The event state to mutate.
+     */
+    public static toggleAllianceColor(team: number, eventState: EventState): void {
+        const entry = Conduit.colorCache.get(team);
+        if (entry) entry.usePrimary = !entry.usePrimary;
+
+        const alliance = eventState.playoffs?.alliances.find((a) => a.colors.source === team);
+        if (alliance) alliance.colors.usePrimary = !alliance.colors.usePrimary;
     }
 
     /**
@@ -248,7 +262,12 @@ export class Conduit {
                 return {
                     number: a.number,
                     teams,
-                    color: `#9a989a`,
+                    colors: {
+                        source: teams[0],
+                        primary: `#9a989a`,
+                        secondary: `#9a989a`,
+                        usePrimary: true,
+                    },
                     us: teams.includes(this.team),
                 };
             }) ?? [];
@@ -257,9 +276,9 @@ export class Conduit {
             if (alliance.teams.length) {
                 const captain = alliance.teams[0];
 
-                const cached = this.colorCache.get(captain);
+                const cached = Conduit.colorCache.get(captain);
                 if (cached) {
-                    alliance.color = cached;
+                    alliance.colors = cached;
                     continue;
                 }
 
@@ -282,14 +301,16 @@ export class Conduit {
 
                     const p = parse(colors.primaryHex);
                     const s = parse(colors.secondaryHex);
+                    const usePrimary = p.w > 40 ? p.t < 660 || p.t < s.t : p.w > s.w;
 
-                    if (p.w > 40) {
-                        alliance.color = p.t < 660 || p.t < s.t ? colors.primaryHex : colors.secondaryHex;
-                    } else {
-                        alliance.color = p.w > s.w ? colors.primaryHex : colors.secondaryHex;
-                    }
+                    alliance.colors = {
+                        source: captain,
+                        primary: colors.primaryHex,
+                        secondary: colors.secondaryHex,
+                        usePrimary,
+                    };
 
-                    this.colorCache.set(captain, alliance.color);
+                    Conduit.colorCache.set(captain, alliance.colors);
                 }
             }
         }
@@ -337,7 +358,7 @@ export class Conduit {
 
         const map: ImageMap = new Map();
         for (const team of teams.flat()) {
-            const cached = this.imageCache.get(team);
+            const cached = Conduit.imageCache.get(team);
             if (cached) {
                 map.set(team, cached);
                 continue;
@@ -351,7 +372,7 @@ export class Conduit {
                 .filter((m) => typeof m === `string`);
 
             map.set(team, images);
-            this.imageCache.set(team, images);
+            Conduit.imageCache.set(team, images);
         }
 
         return map;

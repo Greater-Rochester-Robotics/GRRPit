@@ -1,8 +1,13 @@
 <script lang="ts">
     import { FRCColors } from "$lib/apis/FRCColors";
+    import { Conduit } from "$lib/Conduit";
     import type { EventState } from "../EventState";
 
     let { event }: { event: EventState } = $props();
+
+    let colors = $derived(
+        (event.playoffs?.alliances ?? []).map((a) => (a.colors.usePrimary ? a.colors.primary : a.colors.secondary)),
+    );
 
     function onAvatarError(e: any) {
         if (e.target && e.target.src !== "avatar.png") e.target.src = "avatar.png";
@@ -12,8 +17,13 @@
 <div id="container">
     {#each event.playoffs?.alliances ?? [] as alliance}
         {@const gradient = (l: number) =>
-            `linear-gradient(to right in lch, lch(from ${alliance.color} calc(l + ${l}) c h), lch(0 0 0) 110%)`}
-        <div class="alliance" style="background: {gradient(-10)} padding-box, {gradient(15)} border-box">
+            `linear-gradient(to right in lch, lch(from ${colors[alliance.number - 1]} calc(l + ${l}) c h), lch(0 0 0) 110%)`}
+
+        <button
+            class="alliance"
+            style="background: {gradient(-10)} padding-box, {gradient(15)} border-box"
+            onclick={() => Conduit.toggleAllianceColor(alliance.colors.source, event)}
+        >
             <h1>{alliance.number}</h1>
             <div class="teams">
                 {#each alliance.teams as team}
@@ -23,7 +33,7 @@
                     </div>
                 {/each}
             </div>
-        </div>
+        </button>
     {/each}
 </div>
 
@@ -40,6 +50,8 @@
         flex-direction: row;
         align-items: center;
         border-radius: 0.5vw;
+        color: inherit;
+        font-family: inherit;
         box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
         border: 1px solid transparent;
         display: flex;

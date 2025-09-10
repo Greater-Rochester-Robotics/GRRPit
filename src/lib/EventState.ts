@@ -76,6 +76,13 @@ export interface PlayoffMatch extends Match {
 export interface PlayoffAlliance {
     number: number;
     teams: number[];
-    color: `#${string}`;
+    colors: PlayoffAllianceColors;
     us: boolean;
+}
+
+export interface PlayoffAllianceColors {
+    source: number;
+    primary: `#${string}`;
+    secondary: `#${string}`;
+    usePrimary: boolean;
 }
