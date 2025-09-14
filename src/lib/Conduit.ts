@@ -20,7 +20,7 @@ import { FRCColors } from "./apis/FRCColors";
  */
 export class Conduit {
     private static readonly imageCache: ImageMap = new Map();
-    private static readonly colorCache: Map<number, PlayoffAllianceColors> = new Map();
+    private static readonly colorCache: Map<number, PlayoffAllianceColors | null> = new Map();
 
     private readonly team: number;
     private readonly useNexus: boolean;
@@ -67,7 +67,7 @@ export class Conduit {
         const tournamentLevel = this.serializePhase(phase);
         const scheduleFilter = phase !== EventPhase.PLAYOFFS ? this.team : null;
 
-        const frcMatches = await this.frcEvents.eventSchedule(tournamentLevel, scheduleFilter, null, null);
+        const frcMatches = await this.frcEvents.eventSchedule(tournamentLevel, scheduleFilter);
         const nexusMatches = (this.useNexus ? (await this.nexus.liveEventStatus())?.matches : undefined) ?? [];
 
         const schedule = await this.getScheduleData(tournamentLevel, frcMatches);
@@ -100,21 +100,38 @@ export class Conduit {
      * @returns Ranking data.
      */
     private async getRankingData(): Promise<RankingData> {
-        const frcRankings = await this.frcEvents.eventRankings(16, null);
-        if (!frcRankings.find((r) => r.teamNumber === this.team)) {
-            const us = await this.frcEvents.eventRankings(null, this.team);
-            if (us.length) frcRankings[frcRankings.length - 1] = us[0];
+        const frcRankings = await this.frcEvents.eventRankings(16);
+        if (frcRankings.length) {
+            if (!frcRankings.find((r) => r.teamNumber === this.team)) {
+                const us = await this.frcEvents.eventRankings(null, this.team);
+                if (us.length) frcRankings[frcRankings.length - 1] = us[0];
+            }
+
+            return frcRankings.map((r) => ({
+                rank: r.rank,
+                teamNumber: r.teamNumber,
+                us: r.teamNumber === this.team,
+                wins: r.wins,
+                losses: r.losses,
+                ties: r.ties,
+                rankingScore: r.sortOrder1,
+            }));
         }
 
-        return frcRankings.map((r) => ({
-            rank: r.rank,
-            teamNumber: r.teamNumber,
-            us: r.teamNumber === this.team,
-            wins: r.wins,
-            losses: r.losses,
-            ties: r.ties,
-            rankingScore: r.sortOrder1,
-        }));
+        const teamListings = (await this.frcEvents.teamListings(true))?.teams;
+        if (teamListings) {
+            return teamListings.slice(0, 16).map((t, i) => ({
+                rank: i + 1,
+                teamNumber: t.teamNumber,
+                us: t.teamNumber === this.team,
+                wins: 0,
+                losses: 0,
+                ties: 0,
+                rankingScore: 0,
+            }));
+        }
+
+        return [];
     }
 
     /**
@@ -128,13 +145,9 @@ export class Conduit {
         frcMatches: FRCScheduledMatch[],
     ): Promise<ScheduleData> {
         const frcResults =
-            tournamentLevel !== `Practice`
-                ? await this.frcEvents.eventMatchResults(tournamentLevel, this.team, null, null, null)
-                : [];
+            tournamentLevel !== `Practice` ? await this.frcEvents.eventMatchResults(tournamentLevel, this.team) : [];
         const frcScoreDetails =
-            tournamentLevel !== `Practice`
-                ? await this.frcEvents.scoreDetails(tournamentLevel, this.team, null, null, null)
-                : [];
+            tournamentLevel !== `Practice` ? await this.frcEvents.scoreDetails(tournamentLevel, this.team) : [];
 
         let schedule: ScheduleData = frcMatches
             .filter((m) => m.teams.some((t) => t.teamNumber === this.team))
@@ -205,8 +218,11 @@ export class Conduit {
         );
 
         const nexusMatch =
-            eventStatus.find((m) => m.status !== `On field` || (m.times.estimatedStartTime ?? 0) > now.getTime()) ??
-            eventStatus.at(-1);
+            eventStatus.find(
+                (m) =>
+                    (m.status !== `On field` || (m.times.estimatedStartTime ?? 0) > now.getTime()) &&
+                    !schedule.some((s) => this.nexusMatchNumber(m) === s.number && s.result),
+            ) ?? eventStatus.at(-1);
 
         if (nexusMatch) {
             const redTeams = this.nexusMapTeams(nexusMatch.redTeams);
@@ -220,11 +236,12 @@ export class Conduit {
                     redTeams,
                     blueTeams,
                     images: await this.getImages(redTeams, blueTeams),
+                    badge: nexusMatch.status !== `Queuing soon` ? nexusMatch.status : undefined,
                 },
             };
         } else {
             const scheduleNext =
-                schedule.find((s) => s.startTime.getTime() > now.getTime() && !s.result) ?? schedule.at(-1);
+                schedule.find((s) => !s.result && now.getTime() - s.startTime.getTime() < 900_000) ?? schedule.at(-1);
             if (!scheduleNext) return null;
 
             const countdown = Math.max(0, new Date(scheduleNext.startTime).getTime() - now.getTime());
@@ -237,7 +254,7 @@ export class Conduit {
                         ? `Results Posted`
                         : countdown > 0
                           ? `Scheduled to start in ${(countdown / 1000 / 60).toFixed(0)}m`
-                          : `In progress`,
+                          : `Scheduled to start now`,
                     redTeams: scheduleNext.redTeams,
                     blueTeams: scheduleNext.blueTeams,
                     images: await this.getImages(scheduleNext.redTeams, scheduleNext.blueTeams),
@@ -275,62 +292,77 @@ export class Conduit {
         for (const alliance of alliances) {
             if (alliance.teams.length) {
                 const captain = alliance.teams[0];
+                if (captain >= 9970 && captain < 10000) continue;
 
                 const cached = Conduit.colorCache.get(captain);
-                if (cached) {
-                    alliance.colors = cached;
+                if (cached !== undefined) {
+                    if (cached !== null) alliance.colors = cached;
                     continue;
                 }
 
                 const colors = await FRCColors.colors(captain);
-                if (colors !== null) {
-                    const parse = (hex: `#${string}`) =>
-                        hex
-                            .slice(1)
-                            .match(/.{1,2}/g)
-                            ?.reduce(
-                                (p, c) => {
-                                    const v = parseInt(c, 16);
-                                    return {
-                                        w: v > p.w ? v : p.w,
-                                        t: p.t + v,
-                                    };
-                                },
-                                { w: 0, t: 0 },
-                            ) ?? { w: 0, t: 0 };
-
-                    const p = parse(colors.primaryHex);
-                    const s = parse(colors.secondaryHex);
-                    const usePrimary = p.w > 40 ? p.t < 660 || p.t < s.t : p.w > s.w;
-
-                    alliance.colors = {
-                        source: captain,
-                        primary: colors.primaryHex,
-                        secondary: colors.secondaryHex,
-                        usePrimary,
-                    };
-
-                    Conduit.colorCache.set(captain, alliance.colors);
+                if (colors === null) {
+                    Conduit.colorCache.set(captain, null);
+                    continue;
                 }
+
+                const parse = (hex: `#${string}`) =>
+                    hex
+                        .slice(1)
+                        .match(/.{1,2}/g)
+                        ?.reduce(
+                            (p, c) => {
+                                const v = parseInt(c, 16);
+                                return {
+                                    w: v > p.w ? v : p.w,
+                                    t: p.t + v,
+                                };
+                            },
+                            { w: 0, t: 0 },
+                        ) ?? { w: 0, t: 0 };
+
+                const p = parse(colors.primaryHex);
+                const s = parse(colors.secondaryHex);
+                const usePrimary = p.w > 40 ? p.t < 660 || p.t < s.t : p.w > s.w;
+
+                alliance.colors = {
+                    source: captain,
+                    primary: colors.primaryHex,
+                    secondary: colors.secondaryHex,
+                    usePrimary,
+                };
+
+                Conduit.colorCache.set(captain, alliance.colors);
             }
         }
 
         return {
             alliances,
             matches: new Array(16).fill(null).map((_, i) => {
-                const nexusMatch = nexusMatches.find((m) => this.nexusMatchNumber(m) === i);
-                const frcTeams = frcMatches.find((m) => m.matchNumber === i)?.teams;
+                const frcMatch = frcMatches.find((m) => m.matchNumber === i);
+                const nexusMatch = nexusMatches.find(
+                    (m) => this.nexusMatchNumber(m) === i && !m.label.includes(`Qual`) && !m.label.includes(`Practice`),
+                );
 
-                const map = (a: `Red` | `Blue`, nexus?: NexusMatchTeams): number[] => [
-                    ...new Set(
-                        this.nexusMapTeams(nexus ?? []).concat(
-                            frcTeams?.filter((t) => t.station.startsWith(a)).map((t) => t.teamNumber) ?? [],
-                        ),
-                    ),
-                ];
+                const map = (a: `Red` | `Blue`, nexus?: NexusMatchTeams): number[] => {
+                    const frcTeams = frcMatch?.teams
+                        .filter((t) => t.teamNumber !== null && t.station.startsWith(a))
+                        .map((t) => t.teamNumber);
+
+                    return [...new Set(this.nexusMapTeams(nexus ?? []).concat(frcTeams ?? []))];
+                };
+
+                const findAlliance = (teams: number[]): string | null => {
+                    if (!teams.length) return null;
+                    const number = alliances.find((a) => teams.every((t) => a.teams.includes(t)))?.number;
+                    return number ? `A${number}` : null;
+                };
 
                 const redTeams = map(`Red`, nexusMatch?.redTeams);
                 const blueTeams = map(`Blue`, nexusMatch?.blueTeams);
+
+                const redAlliance = findAlliance(redTeams);
+                const blueAlliance = findAlliance(blueTeams);
 
                 return {
                     number: i,
@@ -340,6 +372,7 @@ export class Conduit {
                     usRed: redTeams.includes(this.team) ? true : blueTeams.includes(this.team) ? false : null,
                     redFill: this.playoffFill(i, true),
                     blueFill: this.playoffFill(i, false),
+                    header: redAlliance || blueAlliance ? `${redAlliance ?? `TBD`} vs ${blueAlliance ?? `TBD`}` : null,
                 };
             }),
         };
@@ -417,32 +450,26 @@ export class Conduit {
      * @param match
      */
     private nexusMatchStatus(now: Date, match: NexusMatch): string {
-        let estimate: number | null = null;
-        let prefix: string;
-
-        switch (match.status) {
-            case `Queuing soon`:
-                estimate = match.times.estimatedQueueTime;
-                prefix = `Queuing in `;
-                break;
-            case `Now queuing`:
-                estimate = match.times.estimatedOnDeckTime;
-                prefix = `On deck in`;
-                break;
-            case `On deck`:
-                estimate = match.times.estimatedOnFieldTime;
-                prefix = `On field in`;
-                break;
-            case `On field`:
-                estimate = match.times.estimatedStartTime;
-                prefix = `Starting in`;
-                break;
-        }
+        const minutes = (timestamp: number, future: boolean = true): string => {
+            const diff = future ? timestamp - now.getTime() : now.getTime() - timestamp;
+            const minutes = Math.max(1, diff / 1000 / 60).toFixed(0);
+            return `${minutes} minute${minutes !== `1` ? `s` : ``}`;
+        };
 
         let status: string = match.status;
-        if (estimate !== null) {
-            const countdown = Math.max(0, (estimate - now.getTime()) / 1000 / 60).toFixed(0);
-            status = prefix + ` ` + countdown + ` minute` + (countdown !== `1` ? `s` : ``);
+        switch (match.status) {
+            case `Queuing soon`:
+                status = `Queuing in ${minutes(match.times.estimatedQueueTime ?? 0)}`;
+                break;
+            case `Now queuing`:
+                status = `On deck in ${minutes(match.times.estimatedOnDeckTime ?? 0)}`;
+                break;
+            case `On deck`:
+                status = `On field in ${minutes(match.times.estimatedOnFieldTime ?? 0)}`;
+                break;
+            case `On field`:
+                status = `${minutes(match.times.actualOnFieldTime ?? 0, false)} ago`;
+                break;
         }
 
         return status;

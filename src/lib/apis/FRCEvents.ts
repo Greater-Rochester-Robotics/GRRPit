@@ -74,6 +74,29 @@ export interface FRCAllianceSelection {
     round3: number | null;
 }
 
+export interface FRCTeamListing {
+    schoolName: string;
+    website: string;
+    homeCMP: string;
+    teamNumber: number;
+    nameFull: string;
+    nameShort: string;
+    city: string;
+    stateProv: string;
+    country: string;
+    rookieYear: number;
+    robotName: string;
+    districtCode: string | null;
+}
+
+export interface FRCTeamListingResponse {
+    teams: FRCTeamListing[];
+    teamCountTotal: number;
+    teamCountPage: number;
+    pageCurrent: number;
+    pageTotal: number;
+}
+
 /**
  * Interface for interacting with the FRC Events API.
  */
@@ -98,7 +121,7 @@ export class FRCEvents {
      * @param top Optional number of requested top ranked teams to return in result.
      * @param teamNumber Optional team number of the team whose ranking is requested.
      */
-    public async eventRankings(top: number | null, teamNumber: number | null): Promise<FRCRanking[]> {
+    public async eventRankings(top: number | null = null, teamNumber: number | null = null): Promise<FRCRanking[]> {
         let rankings: FRCRanking[] = [];
 
         const url = new URL(`https://frc-api.firstinspires.org/v3.0/${this.season}/rankings/${this.event}`);
@@ -141,9 +164,9 @@ export class FRCEvents {
      */
     public async eventSchedule(
         tournamentLevel: FRCTournamentLevel,
-        teamNumber: number | null,
-        start: number | null,
-        end: number | null,
+        teamNumber: number | null = null,
+        start: number | null = null,
+        end: number | null = null,
     ): Promise<FRCScheduledMatch[]> {
         let schedule: FRCScheduledMatch[] = [];
 
@@ -189,11 +212,11 @@ export class FRCEvents {
      * @param end Optional end match number for subset of results to return (inclusive).
      */
     public async eventMatchResults(
-        tournamentLevel: FRCTournamentLevel | null,
-        teamNumber: number | null,
-        matchNumber: number | null,
-        start: number | null,
-        end: number | null,
+        tournamentLevel: FRCTournamentLevel | null = null,
+        teamNumber: number | null = null,
+        matchNumber: number | null = null,
+        start: number | null = null,
+        end: number | null = null,
     ): Promise<FRCMatchResult[]> {
         let matches: FRCMatchResult[] = [];
 
@@ -237,10 +260,10 @@ export class FRCEvents {
      */
     public async scoreDetails(
         tournamentLevel: FRCTournamentLevel,
-        teamNumber: number | null,
-        matchNumber: number | null,
-        start: number | null,
-        end: number | null,
+        teamNumber: number | null = null,
+        matchNumber: number | null = null,
+        start: number | null = null,
+        end: number | null = null,
     ): Promise<FRCMatchScores[]> {
         let scores: FRCMatchScores[] = [];
 
@@ -299,5 +322,42 @@ export class FRCEvents {
         }
 
         return selections;
+    }
+
+    public async teamListings(
+        event: boolean | null = null,
+        teamNumber: number | null = null,
+        districtCode: string | null = null,
+        state: string | null = null,
+        page: number | null = null,
+    ): Promise<FRCTeamListingResponse | null> {
+        let listings: FRCTeamListingResponse | null = null;
+
+        const url = new URL(`https://frc-api.firstinspires.org/v3.0/${this.season}/teams`);
+
+        if (event) url.searchParams.set(`eventCode`, `${this.event}`);
+        if (typeof teamNumber === `number`) url.searchParams.set(`teamNumber`, `${teamNumber}`);
+        if (typeof districtCode === `string`) url.searchParams.set(`districtCode`, `${districtCode}`);
+        if (typeof state === `string`) url.searchParams.set(`state`, `${state}`);
+        if (typeof page === `number`) url.searchParams.set(`page`, `${page}`);
+
+        try {
+            const res = await fetch(url, {
+                headers: { Authorization: this.authorization },
+            });
+
+            if (!res.ok) {
+                throw new Error(
+                    `${res.status} ${res.statusText} - ${JSON.stringify(await res.json().catch(() => ``))}`,
+                );
+            }
+
+            listings = await res.json();
+        } catch (error) {
+            console.error(error);
+            listings = null;
+        }
+
+        return listings;
     }
 }

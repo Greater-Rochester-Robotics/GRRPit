@@ -5,7 +5,6 @@
     import UpNext from "$lib/components/UpNext.svelte";
     import { Conduit } from "$lib/Conduit";
     import { EventPhase, type EventState } from "$lib/EventState";
-    import { stringifyTime } from "$lib/util";
     import { Settings } from "$lib/Settings";
     import Time from "$lib/components/Time.svelte";
 
@@ -31,9 +30,11 @@
         <UpNext {event} />
         <div id="right-bottom">
             <Schedule {event} />
-            <video autoplay muted loop playsinline>
-                <source src="/morale.mp4" type="video/mp4" />
-            </video>
+            <iframe
+                title=""
+                src="https://www.youtube.com/embed/{settings.ytVideoId}?autoplay=1&color=white&disablekb=1&loop=1&mute=1&playlist={settings.ytVideoId}&playsinline=false&rel=0"
+                allowfullscreen
+            ></iframe>
         </div>
     </div>
 </main>
@@ -66,8 +67,9 @@
         justify-content: space-between;
         align-items: center;
 
-        video {
+        iframe {
             width: 29vw;
+            aspect-ratio: 16 / 9;
             border-radius: 0.6rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);

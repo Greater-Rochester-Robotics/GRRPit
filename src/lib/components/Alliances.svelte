@@ -94,8 +94,9 @@
 
         > p {
             font-size: 0.9vw;
+            font-weight: 500;
             text-shadow: 0 0 0.4vw black;
-            opacity: 0.9;
+            opacity: 0.8;
         }
     }
 
@@ -108,7 +109,7 @@
         }
 
         > p {
-            font-size: 0.8em;
+            font-size: 0.72vw;
         }
     }
 </style>

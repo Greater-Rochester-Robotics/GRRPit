@@ -18,6 +18,10 @@
                     const v = (e.target as any).value;
                     Settings.set(key, type === `number` ? Number(v) : v);
                 }}
+                autocapitalize="off"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
             />
         </div>
     {/snippet}
@@ -48,6 +52,10 @@
         <br />
 
         {@render input(`TBA Auth Key`, `tbaAuthKey`, `password`, `thebluealliance.com/apidocs`)}
+
+        <br />
+
+        {@render input(`YouTube Embed ID`, `ytVideoId`, `text`, `dQw4w9WgXcQ`)}
     </div>
 </main>
 

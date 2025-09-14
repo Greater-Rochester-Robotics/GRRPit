@@ -7,10 +7,15 @@
 <div id="container">
     <div id="match">
         <p style="font-size: 0.8vw; opacity: 0.6; font-weight: 300; margin-bottom: 0.1vw;">Up Next</p>
-        <p style="font-size: 2vw; font-weight: 700; line-height: 100%;">{event.upNext.label}</p>
-        <p style="padding-top: 0.2vw; opacity: 0.8; font-size: 1vw; font-weight: 500; font-style: italic;">
-            {event.upNext.match?.status ?? ``}
-        </p>
+        <p id="match-label">{event.upNext.label}</p>
+        <div id="match-status">
+            {#if event.upNext.match?.badge}
+                <p id="match-badge">{event.upNext.match.badge}</p>
+            {/if}
+            <p style="opacity: 0.7; font-style: italic;">
+                {event.upNext.match?.status ?? ``}
+            </p>
+        </div>
     </div>
     <div id="matchup">
         {#if event.upNext.match}
@@ -63,6 +68,30 @@
         font-optical-sizing: none;
         justify-content: center;
         gap: 0.2vw;
+
+        #match-label {
+            font-size: 2vw;
+            font-weight: 700;
+            line-height: 100%;
+            text-shadow: 0 0 0.8vw rgba(0, 0, 0, 0.4);
+        }
+
+        #match-status {
+            display: flex;
+            flex-direction: row;
+            margin-top: 0.35vw;
+            align-items: center;
+            gap: 0.5vw;
+            font-size: 0.8vw;
+
+            #match-badge {
+                padding: 0.15vw 0.4vw;
+                background-color: rgba(232, 120, 34, 0.9);
+                border-radius: 0.3vw;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                font-weight: 500;
+            }
+        }
     }
 
     #matchup {
@@ -81,7 +110,7 @@
         object-fit: cover;
         filter: brightness(0.7);
         border-radius: 0.5vw;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
     }
 

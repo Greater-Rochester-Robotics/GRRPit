@@ -59,6 +59,7 @@ export interface UpNextData {
 export interface UpNextMatch extends Match {
     status: string;
     images: ImageMap;
+    badge?: string;
 }
 
 export interface PlayoffData {
@@ -71,6 +72,7 @@ export interface PlayoffMatch extends Match {
     usRed: boolean | null;
     redFill: string;
     blueFill: string;
+    header: string | null;
 }
 
 export interface PlayoffAlliance {

@@ -12,6 +12,8 @@ export interface SettingsData {
     nexusAPIKey: string;
 
     tbaAuthKey: string;
+
+    ytVideoId: string;
 }
 
 const defaults: SettingsData = {
@@ -23,6 +25,7 @@ const defaults: SettingsData = {
     useNexus: true,
     nexusAPIKey: ``,
     tbaAuthKey: ``,
+    ytVideoId: `wzGRs-C8kqs`,
 };
 
 const store = await load("store.json", { autoSave: true, defaults: defaults as any });

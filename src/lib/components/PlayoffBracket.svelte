@@ -2,6 +2,10 @@
     import type { EventState } from "../EventState";
 
     let { event }: { event: EventState } = $props();
+
+    function stubStyle(spaces: number) {
+        return `margin-top: calc(var(--match-height) * (1.5 + ${spaces / 2}) - (1.66vw + 2.5px)); align-self: start;`;
+    }
 </script>
 
 {#snippet match(number: number)}
@@ -27,15 +31,58 @@
         {/snippet}
 
         <div class="match">
-            {#if match.number > 13}
-                <i style="font-weight: 700;">Finals</i>
-            {:else}
-                <i>{match.name}</i>
-            {/if}
+            <div class="match-header">
+                {#if match.number > 13}
+                    <i style="font-weight: 700;">Finals</i>
+                {:else}
+                    <i>{match.name}</i>
+                {/if}
+                {#if match.header}
+                    <i style="font-weight: 200; opacity: 0.7;">{match.header}</i>
+                {/if}
+            </div>
+            <span style="height: 0.2vw;"></span>
             {@render alliance(true)}
+            <span style="height: 0.16vw;"></span>
             {@render alliance(false)}
         </div>
     {/if}
+{/snippet}
+
+{#snippet merger(spaces: number = 0, continuous: boolean = false, topPass: boolean = false)}
+    <div class="bracket" style="height: calc(var(--match-height) * (2 + {spaces}))">
+        {#if topPass}
+            <span class="stub" style="width: 20%; {stubStyle(-1)}"></span>
+        {:else}
+            <span class="end"></span>
+        {/if}
+        <span
+            style="height: calc(var(--match-height) * (1 + {spaces})); margin-bottom: calc(1.48vw + 2.5px); border-left: none;"
+        ></span>
+        <span class="stub" style={stubStyle(spaces)}></span>
+        {#if continuous}
+            <span class="stub" style="width: 20%; {stubStyle(spaces)}"></span>
+        {:else}
+            <span class="end"></span>
+        {/if}
+    </div>
+{/snippet}
+
+{#snippet snek()}
+    <div class="bracket" style="height: var(--match-height);">
+        <span class="end"></span>
+        <span
+            style="height: calc(var(--match-height) * 0.5 + 0.12vw); margin-bottom: calc(1.48vw + 2.5px); border-left: none; border-top: none;"
+        ></span>
+        <span class="stub" style={stubStyle(-2)}></span>
+        <span class="end"></span>
+    </div>
+{/snippet}
+
+{#snippet passthrough(full: boolean = true, baseLeft: boolean = true)}
+    <div class="bracket" style="height: var(--match-height); justify-content: {baseLeft ? `left` : `right`};">
+        <span class="stub" style="width: {full ? 100 : 80}%; {stubStyle(-1)}"></span>
+    </div>
 {/snippet}
 
 <div id="container">
@@ -45,7 +92,10 @@
         {@render match(3)}
         {@render match(4)}
     </div>
-    <div style="width: 1.5vw;"></div>
+    <div class="divider">
+        {@render merger()}
+        {@render merger()}
+    </div>
     <div class="round">
         <span class="half-spacer"></span>
         {@render match(7)}
@@ -55,60 +105,154 @@
         {@render match(5)}
         {@render match(6)}
     </div>
-    <div style="width: 1.5vw;"></div>
+    <div class="divider">
+        <span class="half-spacer"></span>
+        {@render merger(1, true)}
+        <span class="spacer"></span>
+        {@render snek()}
+        {@render snek()}
+    </div>
     <div class="round">
-        <span class="quad-spacer"></span>
+        <span class="three-halves-spacer"></span>
+        {@render passthrough()}
+        <span class="three-halves-spacer"></span>
         {@render match(10)}
         {@render match(9)}
     </div>
-    <div style="width: 1.5vw;"></div>
+    <div class="divider">
+        <span class="three-halves-spacer"></span>
+        {@render passthrough(false, true)}
+        <span class="three-halves-spacer"></span>
+        {@render merger()}
+    </div>
     <div class="round">
-        <span class="spacer"></span>
-        <span class="half-spacer"></span>
+        <span class="three-halves-spacer"></span>
         {@render match(11)}
         <span class="double-spacer"></span>
         {@render match(12)}
     </div>
-    <div style="width: 1.5vw;"></div>
+    <div class="divider">
+        <span class="three-halves-spacer"></span>
+        {@render passthrough(false, false)}
+        <span class="double-spacer"></span>
+        {@render snek()}
+    </div>
     <div class="round">
-        <span class="quad-spacer"></span>
+        <span class="three-halves-spacer"></span>
+        {@render passthrough()}
+        <span class="three-halves-spacer"></span>
         {@render match(13)}
     </div>
-    <div style="width: 1.5vw;"></div>
+    <div class="divider">
+        <span class="three-halves-spacer"></span>
+        {@render merger(1.5, false, true)}
+    </div>
     <div class="round">
-        <span class="double-spacer"></span>
-        <span class="half-spacer"></span>
+        <span style="height: calc(var(--match-height) * 2.75)"></span>
         {@render match(14)}
     </div>
 </div>
 
 <style>
     :root {
-        --match-height: 4.8vw;
+        --match-height: 5vw;
+        --match-width: ;
     }
 
     #container {
         display: flex;
         flex-direction: row;
-        gap: 0.2vw;
     }
 
-    .round {
+    .round,
+    .divider {
         display: flex;
         flex-direction: column;
-        gap: 0.2vw;
+    }
+
+    .divider {
+        width: 2.4vw;
+    }
+
+    .bracket {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: end;
+
+        .stub {
+            height: 0;
+            border-left: none;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .end {
+            width: 20%;
+            height: 100%;
+            border: none;
+        }
+
+        > span {
+            border: 0.12vw solid rgb(80, 80, 80);
+            width: 30%;
+        }
     }
 
     .match {
         height: var(--match-height);
+        width: 9.5vw;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        justify-content: space-evenly;
+        justify-content: end;
 
-        > i {
+        .match-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             font-size: 0.6vw;
             margin-left: 0.2vw;
+        }
+
+        .alliance {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            text-align: center;
+            opacity: 1;
+            border-radius: 0.3vw;
+            border: 1px solid transparent;
+
+            > p {
+                padding: 0.35vw 0;
+                font-size: 0.7vw;
+            }
+        }
+
+        .red {
+            background-color: rgba(255, 38, 46, 0.2);
+        }
+
+        .red.us {
+            background-color: rgba(255, 38, 46, 0.5);
+        }
+
+        .blue {
+            background-color: rgba(0, 68, 255, 0.2);
+        }
+
+        .blue.us {
+            background-color: rgba(0, 68, 255, 0.5);
+        }
+
+        .us {
+            font-weight: 700;
+        }
+
+        .us,
+        .opponent {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
         }
     }
 
@@ -120,61 +264,11 @@
         height: calc(var(--match-height) * 0.5);
     }
 
+    .three-halves-spacer {
+        height: calc(var(--match-height) * 1.5);
+    }
+
     .double-spacer {
         height: calc(var(--match-height) * 2);
-    }
-
-    .quad-spacer {
-        height: calc(var(--match-height) * 4);
-    }
-
-    .alliance {
-        width: 9.5vw;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
-        text-align: center;
-        opacity: 1;
-        border-radius: 0.3vw;
-        border: 1px solid transparent;
-
-        > p {
-            padding: 0.35vw 0;
-            font-size: 0.7vw;
-        }
-    }
-
-    .red {
-        background-color: rgba(255, 38, 46, 0.15);
-    }
-
-    .red.us {
-        background-color: rgba(255, 38, 46, 0.6);
-    }
-
-    .red.opponent {
-        background-color: rgba(255, 38, 46, 0.42);
-    }
-
-    .blue {
-        background-color: rgba(0, 68, 255, 0.15);
-    }
-
-    .blue.us {
-        background-color: rgba(0, 68, 255, 0.6);
-    }
-
-    .blue.opponent {
-        background-color: rgba(0, 68, 255, 0.42);
-    }
-
-    .us {
-        font-weight: 700;
-    }
-
-    .us,
-    .opponent {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
     }
 </style>
