@@ -33,7 +33,6 @@ export class Conduit {
         this.team = settings.teamNumber;
         this.useNexus = settings.useNexus;
 
-        // TODO
         this.frcEvents = new FRCEvents(
             settings.year,
             settings.eventCode.toUpperCase(),
@@ -369,7 +368,13 @@ export class Conduit {
                     redTeams,
                     blueTeams,
                     name: i > 13 ? `Final ${i - 13}` : `Match ${i}`,
-                    usRed: redTeams.includes(this.team) ? true : blueTeams.includes(this.team) ? false : null,
+                    usRed:
+                        alliances
+                            .find((a) => a.teams.includes(this.team))
+                            ?.teams.reduce(
+                                (p, c) => (redTeams.includes(c) ? true : blueTeams.includes(c) ? false : p),
+                                null as boolean | null,
+                            ) ?? null,
                     redFill: this.playoffFill(i, true),
                     blueFill: this.playoffFill(i, false),
                     header: redAlliance || blueAlliance ? `${redAlliance ?? `TBD`} vs ${blueAlliance ?? `TBD`}` : null,

@@ -11,7 +11,7 @@
         <div id="menu">
             <h1>GRRPit</h1>
             {#if !loading}
-                <a href="/practice" onclick={setLoading}>Practice Day</a>
+                <a href="/practice" onclick={setLoading}>Practice Matches</a>
                 <a href="/qualifications" onclick={setLoading}>Qualifications</a>
                 <a href="/playoffs" onclick={setLoading}>Playoffs</a>
                 <a href="/settings" onclick={setLoading}>Settings</a>

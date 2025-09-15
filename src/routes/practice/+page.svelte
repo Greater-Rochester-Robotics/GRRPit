@@ -21,7 +21,7 @@
 
 <main>
     <div id="container">
-        <p id="heading">Practice Day</p>
+        <p id="heading">Practice Matches</p>
         <UpNext {event} />
         <Schedule {event} />
     </div>
