@@ -6,9 +6,13 @@ FRC Team 340's pit display software, built with SvelteKit + Tauri. Data is provi
 
 The latest binaries can be found under this repository's [actions](https://github.com/Greater-Rochester-Robotics/GRRPit/actions), as artifacts produced by CI.
 
+<br/>
+
 <p>
     <img src="screenshots/homepage.png" width="49%">
     <img src="screenshots/qualifications.png" width="49%">
+    <img src="screenshots/playoffs.png" width="49%">
+    <img src="screenshots/practice.png" width="49%">
 </p>
 
 ### Building
