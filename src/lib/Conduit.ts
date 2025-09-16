@@ -67,7 +67,10 @@ export class Conduit {
         const scheduleFilter = phase !== EventPhase.PLAYOFFS ? this.team : null;
 
         const frcMatches = await this.frcEvents.eventSchedule(tournamentLevel, scheduleFilter);
-        const nexusMatches = (this.useNexus ? (await this.nexus.liveEventStatus())?.matches : undefined) ?? [];
+        const nexusMatches =
+            (this.useNexus ? (await this.nexus.liveEventStatus())?.matches : undefined)?.filter((m) =>
+                this.nexusPhaseFilter(m, phase),
+            ) ?? [];
 
         const schedule = await this.getScheduleData(tournamentLevel, frcMatches);
 
@@ -91,7 +94,7 @@ export class Conduit {
         if (entry) entry.usePrimary = !entry.usePrimary;
 
         const alliance = eventState.playoffs?.alliances.find((a) => a.colors.source === team);
-        if (alliance) alliance.colors.usePrimary = !alliance.colors.usePrimary;
+        if (alliance) alliance.colors.usePrimary = entry?.usePrimary ?? !alliance.colors.usePrimary;
     }
 
     /**
@@ -339,9 +342,7 @@ export class Conduit {
             alliances,
             matches: new Array(16).fill(null).map((_, i) => {
                 const frcMatch = frcMatches.find((m) => m.matchNumber === i);
-                const nexusMatch = nexusMatches.find(
-                    (m) => this.nexusMatchNumber(m) === i && !m.label.includes(`Qual`) && !m.label.includes(`Practice`),
-                );
+                const nexusMatch = nexusMatches.find((m) => this.nexusMatchNumber(m) === i);
 
                 const map = (a: `Red` | `Blue`, nexus?: NexusMatchTeams): number[] => {
                     const frcTeams = frcMatch?.teams
@@ -478,6 +479,26 @@ export class Conduit {
         }
 
         return status;
+    }
+
+    /**
+     * Returns `true` if the specified nexus match is included in the current event phase.
+     * @param match The nexus match.
+     * @param phase The current event phase.
+     * @return `true` if the match is in the current phase, `false` otherwise.
+     */
+    private nexusPhaseFilter(match: NexusMatch, phase: EventPhase): boolean {
+        const p = match.label.startsWith(`Practice`);
+        const q = match.label.startsWith(`Qual`);
+
+        switch (phase) {
+            case EventPhase.PRACTICE:
+                return p;
+            case EventPhase.QUALIFICATIONS:
+                return q;
+            case EventPhase.PLAYOFFS:
+                return !p && !q;
+        }
     }
 
     /**
