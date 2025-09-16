@@ -17,11 +17,11 @@
 <div id="container">
     {#each event.playoffs?.alliances ?? [] as alliance}
         {@const gradient = (l: number) =>
-            `linear-gradient(to right in lch, lch(from ${colors[alliance.number - 1]} calc(l + ${l}) c h), lch(0 0 0) 110%)`}
+            `linear-gradient(to right in oklab, lch(from ${colors[alliance.number - 1]} calc(l + ${l}) c h), lch(0 0 0) 160%)`}
 
         <button
             class="alliance"
-            style="background: {gradient(-10)} padding-box, {gradient(15)} border-box"
+            style="background: {gradient(-5)} padding-box, {gradient(8)} border-box"
             onclick={() => Conduit.toggleAllianceColor(alliance.colors.source, event)}
         >
             <h1>{alliance.number}</h1>
@@ -62,7 +62,7 @@
             font-weight: 800;
             text-align: center;
             font-size: 2.8vw;
-            mask-image: linear-gradient(rgba(0, 0, 0, 0.2), black 130%);
+            mask-image: linear-gradient(rgba(0, 0, 0, 0.4), black 130%);
             text-shadow: 0 0 0.4vw rgba(0, 0, 0, 1);
         }
     }
