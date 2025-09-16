@@ -44,20 +44,24 @@
         height: 100vh;
         display: flex;
         justify-content: center;
-        background: linear-gradient(rgb(38, 38, 40), rgb(26, 26, 28));
+        background-image: linear-gradient(-45deg, rgb(18, 18, 19), rgb(38, 38, 40));
     }
 
     #left {
-        padding: 0 2vw;
+        padding: 2vw;
         gap: 0.5vw;
+        margin: 1vw;
         justify-content: center;
+        background-color: rgb(46, 46, 48);
+        box-shadow: 0 0 0.8vw 0.3vw rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1.2vw;
     }
 
     #right {
-        padding: 0 3vw;
+        padding: 0 2.5vw;
         flex-grow: 1;
-        background-color: rgb(44, 44, 46);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.16);
+        gap: 2vw;
         justify-content: space-evenly;
     }
 
@@ -70,9 +74,9 @@
         iframe {
             width: 29vw;
             aspect-ratio: 16 / 9;
-            border-radius: 0.6rem;
+            border-radius: 0.5vw;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 0 0.8vw 0.3vw rgba(0, 0, 0, 0.2);
         }
     }
 

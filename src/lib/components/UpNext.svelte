@@ -26,7 +26,7 @@
                         {@const images = event.upNext.match!.images.get(team)!}
                         {@const loaded = { count: 0 }}
 
-                        <div class="team-container">
+                        <div class="team">
                             <img
                                 alt=""
                                 onerror={(e: any) => {
@@ -58,7 +58,7 @@
         display: flex;
         height: 25vh;
         width: 100%;
-        gap: 2vw;
+        gap: 3vw;
         justify-content: space-between;
     }
 
@@ -96,35 +96,39 @@
 
     #matchup {
         display: flex;
+        flex-direction: row;
         gap: 1.05vw;
         align-items: center;
+        background-image:
+            radial-gradient(24vw 6.5vw at 12vw, rgba(255, 38, 46, 0.3), transparent),
+            radial-gradient(24vw 6.5vw at calc(100% - 12vw), rgba(0, 68, 255, 0.3), transparent);
     }
 
-    .team-container {
+    .team {
         position: relative;
-    }
 
-    .team-container > img {
-        height: 18vh;
-        width: 6.5vw;
-        object-fit: cover;
-        filter: brightness(0.7);
-        border-radius: 0.5vw;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
-    }
+        > img {
+            height: 10.5vw;
+            width: 7vw;
+            object-fit: cover;
+            filter: brightness(0.7);
+            border-radius: 0.5vw;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0.6vw rgba(0, 0, 0, 0.4);
+        }
 
-    .team-container > p {
-        position: absolute;
-        bottom: 4%;
-        left: 0;
-        width: 100%;
-        font-size: 1.8vw;
-        font-weight: 800;
-        text-align: center;
-        color: white;
-        text-shadow: 0 0 0.2vw black;
-        mask-image: linear-gradient(rgba(0, 0, 0, 0.6), black);
+        > p {
+            position: absolute;
+            bottom: 4%;
+            left: 0;
+            width: 100%;
+            font-size: 1.8vw;
+            font-weight: 800;
+            text-align: center;
+            color: white;
+            text-shadow: 0 0 0.2vw black;
+            mask-image: linear-gradient(rgba(0, 0, 0, 0.6), black);
+        }
     }
 
     .tbd {
@@ -132,12 +136,12 @@
         text-align: center;
         height: 18vh;
         width: 22vw;
-        border-radius: 0.5vw;
-        border: 1px solid rgb(120, 120, 124);
-        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
         color: rgba(255, 255, 255, 0.7);
-        background: linear-gradient(rgba(202, 202, 208, 0.6), rgba(202, 202, 208, 0.1));
         font-size: 0.6vw;
         font-style: italic;
+        border-radius: 0.5vw;
+        border: 1px solid rgb(120, 120, 124);
+        background: linear-gradient(rgba(202, 202, 208, 0.6), rgba(202, 202, 208, 0.1));
+        box-shadow: 0 0 0.6vw rgba(0, 0, 0, 0.4);
     }
 </style>

@@ -219,7 +219,6 @@
             flex-direction: row;
             justify-content: space-evenly;
             text-align: center;
-            opacity: 1;
             border-radius: 0.3vw;
             border: 1px solid transparent;
 
@@ -252,7 +251,7 @@
         .us,
         .opponent {
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 0 0.4vw rgba(0, 0, 0, 0.35);
         }
     }
 

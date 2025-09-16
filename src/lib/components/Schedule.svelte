@@ -66,7 +66,7 @@
     }
 
     tr > * {
-        padding: 0.4vw 1vw;
+        padding: 0.5vw 1vw;
         text-align: center;
     }
 
@@ -92,7 +92,6 @@
         flex-direction: row;
         justify-content: space-evenly;
         text-align: center;
-        opacity: 1;
         border-radius: 0.3vw;
 
         > p {
@@ -106,7 +105,7 @@
     }
 
     .red.us {
-        background-color: rgba(255, 38, 46, 0.3);
+        background-color: rgba(255, 38, 46, 0.35);
     }
 
     .blue {
@@ -114,7 +113,7 @@
     }
 
     .blue.us {
-        background-color: rgba(0, 68, 255, 0.3);
+        background-color: rgba(0, 68, 255, 0.35);
     }
 
     .us {

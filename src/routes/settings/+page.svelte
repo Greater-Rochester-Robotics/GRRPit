@@ -77,7 +77,7 @@
         border-radius: 2vh;
         background-color: black;
         border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 0 1vw rgba(0, 0, 0, 0.5);
 
         > * {
             width: fit-content;

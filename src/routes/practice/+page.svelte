@@ -21,7 +21,6 @@
 
 <main>
     <div id="container">
-        <p id="heading">Practice Matches</p>
         <UpNext {event} />
         <Schedule {event} />
     </div>
@@ -42,11 +41,5 @@
         justify-content: center;
         align-items: center;
         gap: 2vh;
-    }
-
-    #heading {
-        font-style: italic;
-        opacity: 0.6;
-        font-size: 1.4rem;
     }
 </style>

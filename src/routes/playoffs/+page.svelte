@@ -25,11 +25,12 @@
 <main>
     <div id="left">
         <Time {event} />
-        <span style="height: 0.5vw;"></span>
         <Alliances {event} />
     </div>
     <div id="right">
-        <UpNext {event} />
+        <div id="up-next-container">
+            <UpNext {event} />
+        </div>
         <PlayoffBracket {event} />
     </div>
 </main>
@@ -39,27 +40,34 @@
         display: flex;
         height: 100vh;
         justify-content: center;
-        background: linear-gradient(rgb(26, 26, 28), rgb(32, 32, 34));
+        background-image: linear-gradient(-45deg, rgb(18, 18, 19), rgb(38, 38, 40));
     }
 
     #left {
-        padding: 0 2vw;
+        padding: 0 1vw;
         gap: 0.5vw;
+        margin: 1vw;
         justify-content: center;
+        background-color: rgb(46, 46, 48);
+        box-shadow: 0 0 0.8vw 0.3vw rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1.2vw;
     }
 
     #right {
-        padding: 0 3vw;
         flex-grow: 1;
-        background-color: rgb(44, 44, 46);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.16);
-        justify-content: space-evenly;
+        justify-content: center;
         align-items: center;
+        gap: 1vw;
     }
 
     #left,
     #right {
         display: flex;
         flex-direction: column;
+    }
+
+    #up-next-container {
+        width: 95%;
     }
 </style>

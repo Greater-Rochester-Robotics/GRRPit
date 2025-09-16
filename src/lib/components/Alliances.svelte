@@ -52,12 +52,12 @@
         border-radius: 0.5vw;
         color: inherit;
         font-family: inherit;
-        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 0 0.6vw rgba(0, 0, 0, 0.3);
         border: 1px solid transparent;
         display: flex;
 
         > h1 {
-            margin-left: 0.8vw;
+            margin-left: 0.4vw;
             width: 2.4vw;
             font-weight: 800;
             text-align: center;
@@ -87,7 +87,7 @@
             width: 1vw;
             display: inline;
             vertical-align: middle;
-            border-radius: 2px;
+            border-radius: 0.09vw;
             object-fit: contain;
             filter: drop-shadow(0 0 0.2vw rgba(0, 0, 0, 0.5));
         }
