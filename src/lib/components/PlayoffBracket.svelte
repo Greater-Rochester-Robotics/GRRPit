@@ -4,7 +4,7 @@
     let { event }: { event: EventState } = $props();
 
     function stubStyle(spaces: number) {
-        return `margin-top: calc(var(--match-height) * (1.5 + ${spaces / 2}) - (1.66vw + 2.5px)); align-self: start;`;
+        return `margin-bottom: calc(var(--match-height) * ${spaces / 2 + 0.5} + var(--alliance-middle) - var(--bracket-border));`;
     }
 </script>
 
@@ -43,7 +43,7 @@
             </div>
             <span style="height: 0.2vw;"></span>
             {@render alliance(true)}
-            <span style="height: 0.16vw;"></span>
+            <span class="alliance-gap"></span>
             {@render alliance(false)}
         </div>
     {/if}
@@ -52,12 +52,15 @@
 {#snippet merger(spaces: number = 0, continuous: boolean = false, topPass: boolean = false)}
     <div class="bracket" style="height: calc(var(--match-height) * (2 + {spaces}))">
         {#if topPass}
-            <span class="stub" style="width: 20%; {stubStyle(-1)}"></span>
+            <span
+                class="stub"
+                style="width: 20%; margin-bottom: calc(var(--match-height) * (1 + {spaces}) + var(--alliance-middle) - var(--bracket-border))"
+            ></span>
         {:else}
             <span class="end"></span>
         {/if}
         <span
-            style="height: calc(var(--match-height) * (1 + {spaces})); margin-bottom: calc(1.48vw + 2.5px); border-left: none;"
+            style="height: calc(var(--match-height) * (1 + {spaces}) - var(--bracket-border)); margin-bottom: var(--alliance-middle); border-left: none;"
         ></span>
         <span class="stub" style={stubStyle(spaces)}></span>
         {#if continuous}
@@ -72,9 +75,9 @@
     <div class="bracket" style="height: var(--match-height);">
         <span class="end"></span>
         <span
-            style="height: calc(var(--match-height) * 0.5 + 0.12vw); margin-bottom: calc(1.48vw + 2.5px); border-left: none; border-top: none;"
+            style="height: calc(var(--match-height) * 0.5); margin-bottom: var(--alliance-middle); border-left: none; border-top: none;"
         ></span>
-        <span class="stub" style={stubStyle(-2)}></span>
+        <span class="stub" style={stubStyle(0)}></span>
         <span class="end"></span>
     </div>
 {/snippet}
@@ -156,7 +159,17 @@
 <style>
     :root {
         --match-height: 5vw;
-        --match-width: ;
+
+        --alliance-font-size: 0.7vw;
+        --alliance-padding: 0.35vw;
+        --alliance-border: 1px;
+        --alliance-gap: 0.25vw;
+        --alliance-middle: calc(
+            var(--alliance-font-size) + var(--alliance-padding) * 2 + var(--alliance-border) * 2 + var(--alliance-gap) *
+                0.5
+        );
+
+        --bracket-border: 0.12vw;
     }
 
     #container {
@@ -184,7 +197,7 @@
             height: 0;
             border-left: none;
             border-right: none;
-            border-bottom: none;
+            border-bottom: var(--bracket-border) solid transparent;
         }
 
         .end {
@@ -194,7 +207,7 @@
         }
 
         > span {
-            border: 0.12vw solid rgb(80, 80, 80);
+            border: var(--bracket-border) solid rgb(80, 80, 80);
             width: 30%;
         }
     }
@@ -220,12 +233,16 @@
             justify-content: space-evenly;
             text-align: center;
             border-radius: 0.3vw;
-            border: 1px solid transparent;
+            border: var(--alliance-border) solid transparent;
 
             > p {
-                padding: 0.35vw 0;
-                font-size: 0.7vw;
+                padding: var(--alliance-padding) 0;
+                font-size: var(--alliance-font-size);
             }
+        }
+
+        .alliance-gap {
+            height: var(--alliance-gap);
         }
 
         .red {
@@ -234,6 +251,7 @@
 
         .red.us {
             background-color: rgba(255, 38, 46, 0.5);
+            box-shadow: 0 0 0.4vw rgba(255, 38, 46, 0.25);
         }
 
         .blue {
@@ -242,16 +260,20 @@
 
         .blue.us {
             background-color: rgba(0, 68, 255, 0.5);
+            box-shadow: 0 0 0.4vw rgba(0, 68, 255, 0.25);
         }
 
         .us {
             font-weight: 700;
         }
 
+        .opponent {
+            box-shadow: 0 0 0.4vw rgba(0, 0, 0, 0.35);
+        }
+
         .us,
         .opponent {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 0.4vw rgba(0, 0, 0, 0.35);
+            border: var(--alliance-border) solid rgba(255, 255, 255, 0.1);
         }
     }
 
