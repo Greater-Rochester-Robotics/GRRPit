@@ -65,6 +65,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        background-image: none;
     }
 
     #container {
