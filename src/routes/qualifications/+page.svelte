@@ -7,6 +7,7 @@
     import { EventPhase, type EventState } from "$lib/EventState";
     import { Settings } from "$lib/Settings";
     import Time from "$lib/components/Time.svelte";
+    import { ytEmbedURL } from "$lib/util";
 
     const settings = await Settings.getAll();
     const conduit = new Conduit(settings);
@@ -30,11 +31,7 @@
         <UpNext {event} />
         <div id="right-bottom">
             <Schedule {event} />
-            <iframe
-                title=""
-                src="https://www.youtube.com/embed/{settings.ytVideoId}?autoplay=1&color=white&disablekb=1&loop=1&mute=1&playlist={settings.ytVideoId}&playsinline=false&rel=0"
-                allowfullscreen
-            ></iframe>
+            <iframe title="" src={ytEmbedURL(settings.ytVideoId)} allowfullscreen></iframe>
         </div>
     </div>
 </main>
@@ -50,6 +47,7 @@
         padding: 2vw;
         gap: 0.5vw;
         margin: 1vw;
+        margin-right: 0;
         justify-content: center;
         background-color: rgb(46, 46, 48);
         box-shadow: 0 0 0.8vw 0.3vw rgba(0, 0, 0, 0.2);
@@ -59,23 +57,23 @@
 
     #right {
         padding: 0 2.5vw;
-        flex-grow: 1;
+        justify-content: center;
         gap: 2vw;
-        justify-content: space-evenly;
+        flex-grow: 1;
     }
 
     #right-bottom {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+        gap: 3vw;
 
         iframe {
-            width: 29vw;
-            aspect-ratio: 16 / 9;
-            border-radius: 0.5vw;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 1.65vw;
+            width: 0;
+            flex-grow: 1;
             box-shadow: 0 0 0.8vw 0.3vw rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 1.2vw;
         }
     }
 
