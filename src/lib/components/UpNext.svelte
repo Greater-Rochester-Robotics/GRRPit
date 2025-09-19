@@ -33,7 +33,7 @@
                                     loaded.count++;
                                     e.target.src = loaded.count < images.length ? images[loaded.count] : `dozer.jpeg`;
                                 }}
-                                src={images.length ? images[0] : `dozer.jpeg`}
+                                src={images[0] ?? `dozer.jpeg`}
                             />
                             <p>{team}</p>
                         </div>

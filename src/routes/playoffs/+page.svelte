@@ -40,7 +40,6 @@
         display: flex;
         height: 100vh;
         justify-content: center;
-        background-image: linear-gradient(-45deg, rgb(18, 18, 19), rgb(38, 38, 40));
     }
 
     #left {

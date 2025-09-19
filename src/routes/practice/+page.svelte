@@ -32,7 +32,6 @@
         height: 100vh;
         justify-content: center;
         align-items: center;
-        background: linear-gradient(rgb(38, 38, 40), rgb(26, 26, 28));
     }
 
     #container {
