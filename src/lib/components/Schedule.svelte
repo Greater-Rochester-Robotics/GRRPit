@@ -66,7 +66,7 @@
     }
 
     tr > * {
-        padding: 0.5vw 1vw;
+        padding: 0.4vw 1vw;
         text-align: center;
     }
 
@@ -93,6 +93,7 @@
         justify-content: space-evenly;
         text-align: center;
         border-radius: 0.3vw;
+        border: 1px solid transparent;
 
         > p {
             padding: 0.35vw 0;
@@ -118,5 +119,6 @@
 
     .us {
         font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 </style>

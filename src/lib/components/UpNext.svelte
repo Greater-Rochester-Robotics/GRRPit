@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { Conduit } from "$lib/Conduit";
     import type { EventState } from "../EventState";
 
     let { event }: { event: EventState } = $props();
@@ -31,9 +32,12 @@
                                 alt=""
                                 onerror={(e: any) => {
                                     loaded.count++;
-                                    e.target.src = loaded.count < images.length ? images[loaded.count] : `dozer.jpeg`;
+                                    if (loaded.count < images.length) {
+                                        e.target.src = images[loaded.count];
+                                    }
                                 }}
-                                src={images[0] ?? `dozer.jpeg`}
+                                onload={() => Conduit.indexSuccessfulLoad(team, loaded.count)}
+                                src={images[0]}
                             />
                             <p>{team}</p>
                         </div>

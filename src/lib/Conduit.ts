@@ -98,6 +98,20 @@ export class Conduit {
     }
 
     /**
+     * Saves a successful image load to the cache,
+     * prioritizing the loaded image for future attempts.
+     * @param team The team the image belongs to.
+     * @param imageIndex The index of the team's image array that loaded successfully.
+     */
+    public static indexSuccessfulLoad(team: number, imageIndex: number): void {
+        const entry = Conduit.imageCache.get(team);
+        if (entry) {
+            const loaded = entry.splice(imageIndex, 1);
+            if (loaded.length) entry.splice(0, 0, loaded[0]);
+        }
+    }
+
+    /**
      * Retrieves event qualification rankings.
      * @returns Ranking data.
      */
@@ -409,6 +423,8 @@ export class Conduit {
                     m.type === `instagram-image` ? `https://www.thebluealliance.com${m.direct_url}` : m.direct_url,
                 )
                 .filter((m) => typeof m === `string`);
+
+            images.push(`dozer.jpeg`);
 
             map.set(team, images);
             Conduit.imageCache.set(team, images);
