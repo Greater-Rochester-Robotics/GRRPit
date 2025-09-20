@@ -72,7 +72,7 @@ export class Conduit {
                 this.nexusPhaseFilter(m, phase),
             ) ?? [];
 
-        const schedule = await this.getScheduleData(tournamentLevel, frcMatches);
+        const schedule = await this.getScheduleData(tournamentLevel, frcMatches, nexusMatches);
 
         return {
             now,
@@ -116,6 +116,8 @@ export class Conduit {
      * @returns Ranking data.
      */
     private async getRankingData(): Promise<RankingData> {
+        const rankings: RankingData = [];
+
         const frcRankings = await this.frcEvents.eventRankings(16);
         if (frcRankings.length) {
             if (!frcRankings.find((r) => r.teamNumber === this.team)) {
@@ -123,31 +125,40 @@ export class Conduit {
                 if (us.length) frcRankings[frcRankings.length - 1] = us[0];
             }
 
-            return frcRankings.map((r) => ({
-                rank: r.rank,
-                teamNumber: r.teamNumber,
-                us: r.teamNumber === this.team,
-                wins: r.wins,
-                losses: r.losses,
-                ties: r.ties,
-                rankingScore: r.sortOrder1,
-            }));
+            rankings.push(
+                ...frcRankings.map((r) => ({
+                    rank: r.rank,
+                    teamNumber: r.teamNumber,
+                    us: r.teamNumber === this.team,
+                    wins: r.wins,
+                    losses: r.losses,
+                    ties: r.ties,
+                    rankingScore: r.sortOrder1,
+                })),
+            );
         }
 
-        const teamListings = (await this.frcEvents.teamListings(true))?.teams;
-        if (teamListings) {
-            return teamListings.slice(0, 16).map((t, i) => ({
-                rank: i + 1,
-                teamNumber: t.teamNumber,
-                us: t.teamNumber === this.team,
-                wins: 0,
-                losses: 0,
-                ties: 0,
-                rankingScore: 0,
-            }));
+        if (rankings.length < 16) {
+            const teamListings = (await this.frcEvents.teamListings(true))?.teams;
+            if (teamListings?.length) {
+                rankings.push(
+                    ...teamListings
+                        .filter((t) => !rankings.some((r) => r.teamNumber === t.teamNumber))
+                        .slice(0, 16 - rankings.length)
+                        .map((t, i) => ({
+                            rank: i + rankings.length + 1,
+                            teamNumber: t.teamNumber,
+                            us: t.teamNumber === this.team,
+                            wins: 0,
+                            losses: 0,
+                            ties: 0,
+                            rankingScore: 0,
+                        })),
+                );
+            }
         }
 
-        return [];
+        return rankings;
     }
 
     /**
@@ -159,6 +170,7 @@ export class Conduit {
     private async getScheduleData(
         tournamentLevel: FRCTournamentLevel,
         frcMatches: FRCScheduledMatch[],
+        nexusMatches: NexusMatch[],
     ): Promise<ScheduleData> {
         const frcResults =
             tournamentLevel !== `Practice` ? await this.frcEvents.eventMatchResults(tournamentLevel, this.team) : [];
@@ -172,11 +184,12 @@ export class Conduit {
                 const r = frcResults.find((r) => r.matchNumber === m.matchNumber);
                 const d = frcScoreDetails.find((d) => d.matchNumber === m.matchNumber);
                 const usRed = m.teams.find((t) => t.teamNumber === this.team)?.station.startsWith(`Red`) ?? true;
+                const nexusMatch = nexusMatches.find((n) => this.nexusMatchNumber(n) === m.matchNumber);
 
                 return {
                     number: m.matchNumber,
                     description: m.description,
-                    startTime: new Date(r?.actualStartTime ?? m.startTime),
+                    startTime: new Date(r?.actualStartTime ?? nexusMatch?.times?.estimatedStartTime ?? m.startTime),
                     usRed,
                     redTeams: m.teams.filter((t) => t.station.startsWith(`Red`)).map((t) => t.teamNumber),
                     blueTeams: m.teams.filter((t) => t.station.startsWith(`Blue`)).map((t) => t.teamNumber),
