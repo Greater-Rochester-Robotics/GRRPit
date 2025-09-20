@@ -66,7 +66,7 @@
     }
 
     tr > * {
-        padding: 0.5vw 1vw;
+        padding: 0.4vw 1vw;
         text-align: center;
     }
 
