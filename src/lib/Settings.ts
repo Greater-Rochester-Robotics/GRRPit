@@ -14,6 +14,7 @@ export interface SettingsData {
     tbaAuthKey: string;
 
     ytVideoId: string;
+    robotImgSrc: string;
 }
 
 const defaults: SettingsData = {
@@ -26,6 +27,7 @@ const defaults: SettingsData = {
     nexusAPIKey: ``,
     tbaAuthKey: ``,
     ytVideoId: `wzGRs-C8kqs`,
+    robotImgSrc: ``,
 };
 
 const store = await load("store.json", { autoSave: true, defaults: defaults as any });
@@ -44,9 +46,9 @@ export class Settings {
     public static async getAll(): Promise<SettingsData> {
         const loaded = Object.fromEntries(await store.entries());
         const base = Object.assign({}, defaults);
-        for (const [key] of Object.entries(base)) {
-            if (typeof loaded[key] === typeof (base as any)[key]) {
-                (base as any)[key] = loaded[key];
+        for (const [k, v] of Object.entries(base)) {
+            if (typeof loaded[k] === typeof v) {
+                (base as any)[k] = loaded[k];
             }
         }
 

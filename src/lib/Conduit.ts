@@ -21,9 +21,11 @@ import { FRCColors } from "./apis/FRCColors";
 export class Conduit {
     private static readonly imageCache: ImageMap = new Map();
     private static readonly colorCache: Map<number, PlayoffAllianceColors | null> = new Map();
+    private static lastImgSrc: string = ``;
 
     private readonly team: number;
     private readonly useNexus: boolean;
+    private readonly imageSrc: string;
 
     private readonly frcEvents: FRCEvents;
     private readonly nexus: Nexus;
@@ -32,6 +34,7 @@ export class Conduit {
     public constructor(settings: SettingsData) {
         this.team = settings.teamNumber;
         this.useNexus = settings.useNexus;
+        this.imageSrc = settings.robotImgSrc;
 
         this.frcEvents = new FRCEvents(
             settings.year,
@@ -422,6 +425,11 @@ export class Conduit {
             return i < 0 ? 100 : i;
         };
 
+        if (Conduit.lastImgSrc !== this.imageSrc) {
+            Conduit.lastImgSrc = this.imageSrc;
+            Conduit.imageCache.clear();
+        }
+
         const map: ImageMap = new Map();
         for (const team of teams.flat()) {
             const cached = Conduit.imageCache.get(team);
@@ -436,6 +444,10 @@ export class Conduit {
                     m.type === `instagram-image` ? `https://www.thebluealliance.com${m.direct_url}` : m.direct_url,
                 )
                 .filter((m) => typeof m === `string`);
+
+            if (this.imageSrc.includes(`{TEAM}`)) {
+                images.push(this.imageSrc.replaceAll(`{TEAM}`, `${team}`));
+            }
 
             images.push(`dozer.jpeg`);
 

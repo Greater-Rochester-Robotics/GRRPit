@@ -56,6 +56,10 @@
         <br />
 
         {@render input(`YouTube Embed ID`, `ytVideoId`, `text`, `dQw4w9WgXcQ`)}
+
+        <br />
+
+        {@render input(`Robot Image Source`, `robotImgSrc`, `text`, `https://example.com/{TEAM}.png`)}
     </div>
 </main>
 
@@ -73,7 +77,7 @@
         flex-direction: column;
         justify-content: center;
         gap: 0.3vw;
-        padding: 8vw;
+        padding: 7vw;
         overflow: hidden;
         border-radius: 2vh;
         background-color: black;
