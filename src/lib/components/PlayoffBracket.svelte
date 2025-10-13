@@ -158,10 +158,10 @@
 
 <style>
     :root {
-        --match-height: 5vw;
+        --match-height: 5.2vw;
 
-        --alliance-font-size: 0.7vw;
-        --alliance-padding: 0.35vw;
+        --alliance-font-size: 0.72vw;
+        --alliance-padding: 0.4vw;
         --alliance-border: 1px;
         --alliance-gap: 0.25vw;
         --alliance-middle: calc(
@@ -214,7 +214,7 @@
 
     .match {
         height: var(--match-height);
-        width: 9.5vw;
+        width: 10vw;
         display: flex;
         flex-direction: column;
         justify-content: end;

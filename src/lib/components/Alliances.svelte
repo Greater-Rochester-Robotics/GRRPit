@@ -83,8 +83,8 @@
         gap: 0.4vw;
 
         > img {
-            height: 1vw;
-            width: 1vw;
+            height: 1.1vw;
+            width: 1.1vw;
             display: inline;
             vertical-align: middle;
             border-radius: 0.09vw;
@@ -93,7 +93,7 @@
         }
 
         > p {
-            font-size: 0.9vw;
+            font-size: 0.92vw;
             font-weight: 500;
             text-shadow: 0 0 0.4vw black;
             opacity: 0.8;

@@ -26,13 +26,13 @@
             {/snippet}
 
             <tr>
-                <td>{match.number}</td>
+                <td style="font-size: 0.85vw;">{match.number}</td>
                 <td>{@render alliance(true)}</td>
                 {#if match.result}
                     <td class="score" style="padding-left: 0; {match.usRed ? ` opacity: 1.0;` : ``}">
                         {match.result.scoreRed}
                     </td>
-                    <td style="font-weight: 800; font-size: 0.8vw; opacity: {match.result.usWin ? 1 : 0.4}">
+                    <td style="font-weight: 800; font-size: 0.9vw; opacity: {match.result.usWin ? 1 : 0.4}">
                         {typeof match.result.awardedRp == `number`
                             ? `${match.result.awardedRp} RP`
                             : match.result.usWin
@@ -44,7 +44,7 @@
                     </td>
                 {:else}
                     <td></td>
-                    <td style="font-weight: 600; font-size: 0.8vw;">
+                    <td class="scheduled-time">
                         {match.startTime ? stringifyTime(match.startTime) : `TBD`}
                     </td>
                     <td></td>
@@ -66,7 +66,7 @@
     }
 
     tr > * {
-        padding: 0.4vw 1vw;
+        padding: 0.5vw 1vw;
         text-align: center;
     }
 
@@ -77,13 +77,18 @@
     }
 
     td {
-        font-size: 0.7vw;
+        font-size: 0.8vw;
     }
 
     .score {
         font-weight: 700;
         width: 2vw;
         opacity: 0.4;
+    }
+
+    .scheduled-time {
+        font-weight: 700;
+        font-size: 0.85vw;
     }
 
     .alliance {

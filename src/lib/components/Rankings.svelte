@@ -17,7 +17,7 @@
                 <td class="avatar">
                     <img alt="" src={FRCColors.avatar(ranking.teamNumber)} onerror={onAvatarError} />
                 </td>
-                <td style="text-align: left; font-weight: 600;">{ranking.teamNumber}</td>
+                <td style="text-align: left; font-weight: 600; opacity: 0.9;">{ranking.teamNumber}</td>
                 <td style="width: 0.5vw;"></td>
                 <td class="metric" style="opacity: 0.6; text-align: right;"
                     >{ranking.wins}-{ranking.losses}{ranking.ties > 0 ? `-${ranking.ties}` : ``}</td
@@ -35,7 +35,7 @@
 
     td {
         padding: 0.5vw 0.5vw;
-        font-size: 0.78vw;
+        font-size: 0.9vw;
         text-align: center;
     }
 
@@ -45,8 +45,8 @@
     }
 
     .avatar > img {
-        height: 1.1vw;
-        width: 1.1vw;
+        height: 1.3vw;
+        width: 1.3vw;
         border-radius: 0.1vw;
         object-fit: contain;
     }
@@ -54,6 +54,6 @@
     .metric {
         font-family: "JetBrains Mono", monospace;
         font-weight: 500;
-        font-size: 0.68vw;
+        font-size: 0.8vw;
     }
 </style>

@@ -45,7 +45,7 @@
 
     #left {
         padding: 2vw;
-        gap: 0.5vw;
+        gap: 0.6vw;
         margin: 1vw;
         margin-right: 0;
         justify-content: center;

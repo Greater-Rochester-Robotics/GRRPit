@@ -57,7 +57,7 @@
         flex-grow: 1;
         justify-content: center;
         align-items: center;
-        gap: 1vw;
+        gap: 0.5vw;
     }
 
     #left,

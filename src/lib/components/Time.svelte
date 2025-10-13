@@ -10,8 +10,8 @@
         ? `center`
         : `left`}"
 >
-    <p style="font-size: 1.6vw; font-weight: 700;">
+    <p style="font-size: 1.8vw; font-weight: 700;">
         {event.now.toLocaleString(`en-us`, { weekday: `long` })}
     </p>
-    <p style="opacity: 0.6; font-size: 1vw; font-weight: 700;">{stringifyTime(event.now)}</p>
+    <p style="opacity: 0.6; font-size: 1.3vw; font-weight: 700;">{stringifyTime(event.now)}</p>
 </div>
