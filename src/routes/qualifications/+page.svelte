@@ -31,7 +31,12 @@
         <UpNext {event} />
         <div id="right-bottom">
             <Schedule {event} />
-            <iframe title="" src={ytEmbedURL(settings.ytVideoId)} allowfullscreen></iframe>
+            <iframe
+                title=""
+                src={ytEmbedURL(settings.ytVideoId)}
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+            ></iframe>
         </div>
     </div>
 </main>

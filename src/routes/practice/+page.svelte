@@ -30,7 +30,13 @@
             <Time {event} alignCenter />
             <Schedule {event} />
         </div>
-        <iframe title="" class="panel" src={ytEmbedURL(settings.ytVideoId)} allowfullscreen></iframe>
+        <iframe
+            title=""
+            class="panel"
+            src={ytEmbedURL(settings.ytVideoId)}
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+        ></iframe>
     </div>
 </main>
 
