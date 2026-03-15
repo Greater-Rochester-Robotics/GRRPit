@@ -76,7 +76,7 @@
         gap: 0.2vw;
 
         #match-label {
-            font-size: 2.2vw;
+            font-size: 1.8vw;
             font-weight: 700;
             line-height: 100%;
             text-shadow: 0 0 0.8vw rgba(0, 0, 0, 0.4);
@@ -89,7 +89,7 @@
             margin-left: 0.1vw;
             align-items: center;
             gap: 0.5vw;
-            font-size: 1.2vw;
+            font-size: 0.95vw;
 
             #match-badge {
                 padding: 0.15vw 0.4vw;
