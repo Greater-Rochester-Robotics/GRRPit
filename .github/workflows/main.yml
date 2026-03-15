@@ -15,12 +15,12 @@ jobs:
 
         steps:
             - name: Checkout Repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0
 
             - name: Setup Node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   registry-url: https://registry.npmjs.org/
@@ -64,12 +64,12 @@ jobs:
 
         steps:
             - name: Checkout Repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0
 
             - name: Setup Node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   registry-url: https://registry.npmjs.org/
@@ -108,41 +108,41 @@ jobs:
               run: sudo xcode-select -switch /Applications/Xcode_16.4.app
 
             - name: Run Tauri Build
-              uses: tauri-apps/tauri-action@v0
+              uses: tauri-apps/tauri-action@v1
               with:
                   args: ${{ matrix.build-flags }}
 
             - name: Upload bundle (Windows-x86_54)
               if: matrix.artifact == 'Windows-x86_64'
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: GRRPit-${{ matrix.artifact }}
                   path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
 
             - name: Upload bundle (Windows-arm64)
               if: matrix.artifact == 'Windows-arm64'
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: GRRPit-${{ matrix.artifact }}
                   path: src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe
 
             - name: Upload bundle (macOS-x86_64)
               if: matrix.artifact == 'macOS-x86_64'
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: GRRPit-${{ matrix.artifact }}
                   path: src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
 
             - name: Upload bundle (macOS-arm64)
               if: matrix.artifact == 'macOS-arm64'
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: GRRPit-${{ matrix.artifact }}
                   path: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
 
             - name: Upload bundle (Linux-x86_64)
               if: matrix.artifact == 'Linux-x86_64'
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: GRRPit-${{ matrix.artifact }}
                   path: |
@@ -152,7 +152,7 @@ jobs:
 
             - name: Upload bundle (Linux-arm64)
               if: matrix.artifact == 'Linux-arm64'
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: GRRPit-${{ matrix.artifact }}
                   path: |
