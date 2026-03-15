@@ -108,7 +108,7 @@ jobs:
               run: sudo xcode-select -switch /Applications/Xcode_16.4.app
 
             - name: Run Tauri Build
-              uses: tauri-apps/tauri-action@v1
+              uses: tauri-apps/tauri-action@v0
               with:
                   args: ${{ matrix.build-flags }}
 
