@@ -14,5 +14,5 @@ export function stringifyTime(date: Date): string {
  * @returns The embed URL.
  */
 export function ytEmbedURL(videoId: string): string {
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&color=white&disablekb=1&loop=1&mute=1&playlist=${videoId}&playsinline=1&rel=0`;
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&color=white&disablekb=1&loop=1&mute=1&playlist=${videoId}&playsinline=1&rel=0`;
 }
