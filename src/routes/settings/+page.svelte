@@ -55,10 +55,6 @@
 
         <br />
 
-        {@render input(`YouTube Embed ID`, `ytVideoId`, `text`, `dQw4w9WgXcQ`)}
-
-        <br />
-
         {@render input(`Robot Image Source`, `robotImgSrc`, `text`, `https://example.com/{TEAM}.png`)}
     </div>
 </main>

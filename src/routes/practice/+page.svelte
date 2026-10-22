@@ -6,7 +6,7 @@
     import { EventPhase, type EventState } from "$lib/EventState";
     import { Settings } from "$lib/Settings";
     import Time from "$lib/components/Time.svelte";
-    import { ytEmbedURL } from "$lib/util";
+    import MoodMeter from "$lib/components/MoodMeter.svelte";
 
     const settings = await Settings.getAll();
     const conduit = new Conduit(settings);
@@ -30,13 +30,9 @@
             <Time {event} alignCenter />
             <Schedule {event} />
         </div>
-        <iframe
-            title=""
-            class="panel"
-            src={ytEmbedURL(settings.ytVideoId)}
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-        ></iframe>
+        <div id="mood" class="panel">
+            <MoodMeter />
+        </div>
     </div>
 </main>
 
@@ -70,9 +66,10 @@
             align-items: center;
         }
 
-        > iframe {
+        > #mood {
             width: 0;
             flex-grow: 1;
+            padding: 0;
         }
     }
 
