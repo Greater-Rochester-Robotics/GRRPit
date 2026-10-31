@@ -5,8 +5,8 @@
     import { Conduit } from "#lib/Conduit.ts";
     import { EventPhase, type EventState } from "#lib/EventState.ts";
     import { Settings } from "#lib/Settings.ts";
-    import Time from "#lib/components/Time.svelte";
     import MoodMeter from "#lib/components/MoodMeter.svelte";
+    import Time from "#lib/components/Time.svelte";
 
     const settings = await Settings.getAll();
     const conduit = new Conduit(settings);
@@ -30,7 +30,9 @@
             <Time {event} alignCenter />
             <Schedule {event} />
         </div>
-        <MoodMeter />
+        <div id="mood" class="panel">
+            <MoodMeter />
+        </div>
     </div>
 </main>
 
@@ -62,6 +64,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+        }
+
+        > #mood {
+            width: 0;
+            flex-grow: 1;
+            padding: 0;
         }
     }
 
