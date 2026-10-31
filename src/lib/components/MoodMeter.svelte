@@ -13,7 +13,13 @@
     const size = moods.length;
 
     // Words for going far off the scale next to certain moods, used instead of "Extremely".
-    const extremes: Record<string, string> = { Enraged: `Pugnacious`, Repulsed: `Repugnant` };
+    const extremes: Record<string, string> = {
+        Enraged: `Pugnacious`,
+        Repulsed: `Repugnant`,
+        Despair: `Extreme Despair`,
+        Fuming: `Infuriated`,
+        Tranquil: `Pure Tranquility`,
+    };
 
     const red: Color = [255, 69, 58];
     const yellow: Color = [255, 214, 10];
@@ -49,8 +55,8 @@
 
     const label = $derived.by(() => {
         const mood = moods[row][col];
-        if (intensity > 0.5) return extremes[mood] ?? `Extremely ${mood}`;
-        return intensity > 0 ? `Very ${mood}` : mood;
+        if (intensity > 0.2) return extremes[mood] ?? `Extremely ${mood}`;
+        return mood;
     });
 
     // -1 to 1 on the chart, unpleasant to pleasant and low to high energy.
@@ -152,7 +158,7 @@
 >
     <div id="chart">
         <div id="header">
-            <p style="font-size: 0.8vw; opacity: 0.6; font-weight: 300;">Feeling</p>
+            <p style="font-size: 0.8vw; opacity: 0.6; font-weight: 300;">Mood Meter</p>
             <p id="word" style={intensity > 0 ? `color: ${faceColor};` : ``}>
                 {label}
             </p>
@@ -248,7 +254,7 @@
         display: flex;
         height: 100%;
         width: 100%;
-        padding: 1.2vw;
+        padding: 1.2vw 1.2vw 0.2vw 0.2vw;
         box-sizing: border-box;
         justify-content: center;
         align-items: center;

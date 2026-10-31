@@ -30,7 +30,9 @@
     <div id="right">
         <UpNext {event} />
         <div id="right-bottom">
-            <Schedule {event} />
+            <div id="schedule">
+                <Schedule {event} />
+            </div>
             <div id="mood">
                 <MoodMeter />
             </div>
@@ -67,12 +69,18 @@
     #right-bottom {
         display: flex;
         flex-direction: row;
-        gap: 3vw;
+        gap: 1vw;
+        align-items: center;
+
+        #schedule {
+            flex-grow: 1;
+        }
 
         #mood {
             margin-top: 1.65vw;
+            padding-bottom: 0.8vw;
             width: 0;
-            flex-grow: 1;
+            flex-grow: 6;
             background-color: rgb(46, 46, 48);
             box-shadow: 0 0 0.8vw 0.3vw rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.12);
