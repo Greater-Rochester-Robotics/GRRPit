@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { EventState } from "../EventState";
-    import { FRCColors } from "../apis/FRCColors";
+    import type { EventState } from "../EventState.ts";
+    import { FRCColors } from "../apis/FRCColors.ts";
 
     let { event }: { event: EventState } = $props();
 
@@ -15,7 +15,7 @@
             <tr style={ranking.us ? "background-color: rgba(255, 255, 255, 0.07);" : ``}>
                 <td>{ranking.rank}</td>
                 <td class="avatar">
-                    <img alt="" src={FRCColors.avatar(ranking.teamNumber)} onerror={onAvatarError} />
+                    <img src={FRCColors.avatar(ranking.teamNumber)} onerror={onAvatarError} alt="" />
                 </td>
                 <td style="text-align: left; font-weight: 600; opacity: 0.9;">{ranking.teamNumber}</td>
                 <td style="width: 0.5vw;"></td>

@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { type EventState } from "../EventState";
-    import { stringifyTime } from "../util";
+    import { Conduit } from "../Conduit.ts";
+    import { type EventState } from "../EventState.ts";
 
     let { event }: { event: EventState } = $props();
 </script>
@@ -45,7 +45,7 @@
                 {:else}
                     <td></td>
                     <td class="scheduled-time">
-                        {match.startTime ? stringifyTime(match.startTime) : `TBD`}
+                        {match.startTime ? Conduit.stringifyTime(match.startTime) : `TBD`}
                     </td>
                     <td></td>
                 {/if}

@@ -1,6 +1,6 @@
 <script lang="ts">
-    import Switch from "$lib/components/Switch.svelte";
-    import { Settings, type SettingsData } from "$lib/Settings";
+    import Switch from "#lib/components/Switch.svelte";
+    import { Settings, type SettingsData } from "#lib/Settings.ts";
     import { type HTMLInputTypeAttribute } from "svelte/elements";
 
     const data = await Settings.getAll();
@@ -40,6 +40,7 @@
 
         {@render input(`FRC Events Username`, `frcEventsUsername`, `text`, `frc-api-docs.firstinspires.org`)}
         {@render input(`FRC Events Auth Key`, `frcEventsAuthKey`, `password`)}
+        {@render input(`TBA Auth Key`, `tbaAuthKey`, `password`, `thebluealliance.com/apidocs`)}
 
         <br />
 
@@ -48,10 +49,6 @@
             <Switch bind:checked={() => data.useNexus, (v) => Settings.set(`useNexus`, v)} />
         </div>
         {@render input(`Nexus API Key`, `nexusAPIKey`, `password`, `frc.nexus/api/v1/docs`)}
-
-        <br />
-
-        {@render input(`TBA Auth Key`, `tbaAuthKey`, `password`, `thebluealliance.com/apidocs`)}
 
         <br />
 

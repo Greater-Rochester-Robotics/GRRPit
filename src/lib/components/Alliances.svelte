@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { FRCColors } from "$lib/apis/FRCColors";
-    import { Conduit } from "$lib/Conduit";
-    import type { EventState } from "../EventState";
+    import { FRCColors } from "#lib/apis/FRCColors.ts";
+    import { Conduit } from "#lib/Conduit.ts";
+    import type { EventState } from "../EventState.ts";
 
     let { event }: { event: EventState } = $props();
 
@@ -28,7 +28,7 @@
             <div class="teams">
                 {#each alliance.teams as team}
                     <div class="team{alliance.teams.length > 3 ? ` condensed` : ``}">
-                        <img alt="" src={FRCColors.avatar(team)} onerror={onAvatarError} />
+                        <img src={FRCColors.avatar(team)} onerror={onAvatarError} alt="" />
                         <p>{team}</p>
                     </div>
                 {/each}

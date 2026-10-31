@@ -1,4 +1,5 @@
 <script lang="ts">
+    // Mood Meter powered by Grok Imagine
     type Color = [number, number, number];
     // Verity's From Minecraft... He Belongs to Backrooms... 🚀🚀🚀
     const moods = [

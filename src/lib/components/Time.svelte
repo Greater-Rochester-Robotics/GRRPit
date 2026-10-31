@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { stringifyTime } from "$lib/util";
-    import type { EventState } from "../EventState";
+    import { Conduit } from "../Conduit.ts";
+    import type { EventState } from "../EventState.ts";
 
     let { event, alignCenter = false }: { event: EventState; alignCenter?: boolean } = $props();
 </script>
@@ -13,5 +13,5 @@
     <p style="font-size: 1.8vw; font-weight: 700;">
         {event.now.toLocaleString(`en-us`, { weekday: `long` })}
     </p>
-    <p style="opacity: 0.6; font-size: 1.3vw; font-weight: 700;">{stringifyTime(event.now)}</p>
+    <p style="opacity: 0.6; font-size: 1.3vw; font-weight: 700;">{Conduit.stringifyTime(event.now)}</p>
 </div>
