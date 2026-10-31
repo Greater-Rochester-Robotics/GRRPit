@@ -13,7 +13,6 @@ export interface SettingsData {
 
     tbaAuthKey: string;
 
-    ytVideoId: string;
     robotImgSrc: string;
 }
 
@@ -26,7 +25,6 @@ const defaults: SettingsData = {
     useNexus: true,
     nexusAPIKey: ``,
     tbaAuthKey: ``,
-    ytVideoId: `wzGRs-C8kqs`,
     robotImgSrc: ``,
 };
 

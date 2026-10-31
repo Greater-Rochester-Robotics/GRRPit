@@ -1,13 +1,12 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import Schedule from "$lib/components/Schedule.svelte";
-    import UpNext from "$lib/components/UpNext.svelte";
-    import { Conduit } from "$lib/Conduit";
-    import { EventPhase, type EventState } from "$lib/EventState";
-    import { Settings } from "$lib/Settings";
-    import PlayoffBracket from "$lib/components/PlayoffBracket.svelte";
-    import Time from "$lib/components/Time.svelte";
-    import Alliances from "$lib/components/Alliances.svelte";
+    import UpNext from "#lib/components/UpNext.svelte";
+    import { Conduit } from "#lib/Conduit.ts";
+    import { EventPhase, type EventState } from "#lib/EventState.ts";
+    import { Settings } from "#lib/Settings.ts";
+    import PlayoffBracket from "#lib/components/PlayoffBracket.svelte";
+    import Time from "#lib/components/Time.svelte";
+    import Alliances from "#lib/components/Alliances.svelte";
 
     const settings = await Settings.getAll();
     const conduit = new Conduit(settings);

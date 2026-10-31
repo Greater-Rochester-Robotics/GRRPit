@@ -1,3 +1,5 @@
+import adapter from "@sveltejs/adapter-static";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 
@@ -6,7 +8,13 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-    plugins: [sveltekit()],
+    plugins: [
+        sveltekit({
+            adapter: adapter({ fallback: "index.html" }),
+            compilerOptions: { experimental: { async: true } },
+            preprocess: vitePreprocess(),
+        }),
+    ],
     clearScreen: false,
     server: {
         port: 1420,

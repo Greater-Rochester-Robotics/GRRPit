@@ -2,6 +2,9 @@
     "name": "grrpit",
     "version": "2026.0.0",
     "type": "module",
+    "imports": {
+        "#lib/*": "./src/lib/*"
+    },
     "scripts": {
         "dev": "vite dev",
         "build": "vite build",
@@ -19,15 +22,15 @@
         "@tauri-apps/plugin-store": "^2"
     },
     "devDependencies": {
-        "@sveltejs/adapter-static": "^3.0.10",
-        "@sveltejs/kit": "^2.57.1",
-        "@sveltejs/vite-plugin-svelte": "^7.0.0",
+        "@sveltejs/adapter-static": "^4.0.1",
+        "@sveltejs/kit": "^3.1.1",
+        "@sveltejs/vite-plugin-svelte": "^7.3.1",
         "@tauri-apps/cli": "^2",
-        "prettier": "^3.8.3",
-        "prettier-plugin-svelte": "^3.5.1",
-        "svelte": "^5.55.4",
-        "svelte-check": "^4.4.6",
-        "typescript": "^5.9.3",
-        "vite": "^8.0.10"
+        "prettier": "^3.9.10",
+        "prettier-plugin-svelte": "^4.1.1",
+        "svelte": "^5.57.3",
+        "svelte-check": "^4.7.7",
+        "typescript": "^6.0.3",
+        "vite": "^8.3.5"
     }
 }

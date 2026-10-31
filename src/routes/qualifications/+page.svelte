@@ -1,13 +1,13 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import Rankings from "$lib/components/Rankings.svelte";
-    import Schedule from "$lib/components/Schedule.svelte";
-    import UpNext from "$lib/components/UpNext.svelte";
-    import { Conduit } from "$lib/Conduit";
-    import { EventPhase, type EventState } from "$lib/EventState";
-    import { Settings } from "$lib/Settings";
-    import Time from "$lib/components/Time.svelte";
-    import { ytEmbedURL } from "$lib/util";
+    import Rankings from "#lib/components/Rankings.svelte";
+    import Schedule from "#lib/components/Schedule.svelte";
+    import UpNext from "#lib/components/UpNext.svelte";
+    import { Conduit } from "#lib/Conduit.ts";
+    import { EventPhase, type EventState } from "#lib/EventState.ts";
+    import { Settings } from "#lib/Settings.ts";
+    import Time from "#lib/components/Time.svelte";
+    import MoodMeter from "#lib/components/MoodMeter.svelte";
 
     const settings = await Settings.getAll();
     const conduit = new Conduit(settings);
@@ -31,12 +31,7 @@
         <UpNext {event} />
         <div id="right-bottom">
             <Schedule {event} />
-            <iframe
-                title=""
-                src={ytEmbedURL(settings.ytVideoId)}
-                referrerpolicy="strict-origin-when-cross-origin"
-                allowfullscreen
-            ></iframe>
+            <MoodMeter />
         </div>
     </div>
 </main>
@@ -71,15 +66,6 @@
         display: flex;
         flex-direction: row;
         gap: 3vw;
-
-        iframe {
-            margin-top: 1.65vw;
-            width: 0;
-            flex-grow: 1;
-            box-shadow: 0 0 0.8vw 0.3vw rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 1.2vw;
-        }
     }
 
     #left,

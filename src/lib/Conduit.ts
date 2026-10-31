@@ -1,7 +1,7 @@
-import { FRCEvents, type FRCTournamentLevel, type FRCScheduledMatch } from "./apis/FRCEvents";
-import { Nexus, type NexusMatch, type NexusMatchTeams } from "./apis/Nexus";
-import { TBA, type TBAMediaType } from "./apis/TBA";
-import type { SettingsData } from "./Settings";
+import { FRCEvents, type FRCTournamentLevel, type FRCScheduledMatch } from "./apis/FRCEvents.ts";
+import { Nexus, type NexusMatch, type NexusMatchTeams } from "./apis/Nexus.ts";
+import { TBA, type TBAMediaType } from "./apis/TBA.ts";
+import type { SettingsData } from "./Settings.ts";
 import {
     EventPhase,
     type EventState,
@@ -12,8 +12,8 @@ import {
     type RankingData,
     type ScheduleData,
     type UpNextData,
-} from "./EventState";
-import { FRCColors } from "./apis/FRCColors";
+} from "./EventState.ts";
+import { FRCColors } from "./apis/FRCColors.ts";
 
 /**
  * Manages and formats data obtained from third-party APIs.
@@ -112,6 +112,16 @@ export class Conduit {
             const loaded = entry.splice(imageIndex, 1);
             if (loaded.length) entry.splice(0, 0, loaded[0]);
         }
+    }
+
+    /**
+     * Stringifies a {@link Date} into a human-readable format of HH:MM[am|pm].
+     * @param date The date to stringify.
+     * @returns A string representing the time.
+     */
+    public static stringifyTime(date: Date): string {
+        const hours = date.getHours() % 12;
+        return `${hours === 0 ? 12 : hours}:${`${date.getMinutes()}`.padStart(2, `0`)}${date.getHours() >= 12 ? `pm` : `am`}`;
     }
 
     /**

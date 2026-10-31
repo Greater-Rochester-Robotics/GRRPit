@@ -1,12 +1,12 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import Schedule from "$lib/components/Schedule.svelte";
-    import UpNext from "$lib/components/UpNext.svelte";
-    import { Conduit } from "$lib/Conduit";
-    import { EventPhase, type EventState } from "$lib/EventState";
-    import { Settings } from "$lib/Settings";
-    import Time from "$lib/components/Time.svelte";
-    import { ytEmbedURL } from "$lib/util";
+    import Schedule from "#lib/components/Schedule.svelte";
+    import UpNext from "#lib/components/UpNext.svelte";
+    import { Conduit } from "#lib/Conduit.ts";
+    import { EventPhase, type EventState } from "#lib/EventState.ts";
+    import { Settings } from "#lib/Settings.ts";
+    import Time from "#lib/components/Time.svelte";
+    import MoodMeter from "#lib/components/MoodMeter.svelte";
 
     const settings = await Settings.getAll();
     const conduit = new Conduit(settings);
@@ -30,13 +30,7 @@
             <Time {event} alignCenter />
             <Schedule {event} />
         </div>
-        <iframe
-            title=""
-            class="panel"
-            src={ytEmbedURL(settings.ytVideoId)}
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-        ></iframe>
+        <MoodMeter />
     </div>
 </main>
 
@@ -68,11 +62,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-        }
-
-        > iframe {
-            width: 0;
-            flex-grow: 1;
         }
     }
 
